@@ -21,6 +21,7 @@ textarea {
 html {
     font-size: 1em;
     line-height: 1.4;
+    background: #eee;
 }
 
 /*
@@ -107,17 +108,17 @@ textarea {
 }
 
 td {
-    border: 1px solid #ccc;
+    border: 1px solid #bbb;
     height: 20px;
     width: 20px;
 }
 
 .pre-row td {
-    border: 1px dashed #ddd;
+    border: 1px dashed #ccc;
 }
 
 #pre-row-1 td {
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #bbb;
 }
 
 #gameDiv {
