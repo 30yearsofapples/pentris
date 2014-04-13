@@ -17,15 +17,20 @@ function Piece(x, y, type, orientation) {
 }
 
 Piece.prototype.rotate = function() {
+    this.render(false);
+
     this.orientation = (this.orientation + 1) % 4;
     this.structure = PIECE_TYPE[this.type][this.orientation];
+
+    this.render(true);
 };
 
-Piece.prototype.draw = function(reallyDraw) {
+Piece.prototype.render = function(reallyRender) {
     for (var j = 0; j < this.structure.length; j++) {
         for (var i = 0; i < this.structure[j].length; i++) {
             if (this.structure[j][i]) {
-                if (reallyDraw) {
+                markCell(this.x + i, this.y + j, reallyRender)
+                if (reallyRender) {
                     colorCell(this.x + i, this.y + j, PIECE_COLOR[this.type]);
                 } else {
                     colorCell(this.x + i, this.y + j, PIECE_COLOR[0]);
@@ -36,7 +41,7 @@ Piece.prototype.draw = function(reallyDraw) {
 };
 
 Piece.prototype.move = function(direction) {
-    this.draw(false);
+    this.render(false);
     
     switch (direction) {
         case 1: // Left
@@ -50,15 +55,43 @@ Piece.prototype.move = function(direction) {
             break;
     }
     
-    this.draw(true);
+    this.render(true);
 };
 /*
  * END Piece
  */
+
+function markCell(x, y, reallyMark) {
+    cellTaken[y][x] = reallyMark;
+}
  
 function colorCell(x, y, color) {
     $($('#gameTable>tbody').children()[y].children[x]).css('background', color);
 }
+
+var cellTaken = [
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+]
 
 var currentColor = 0;
 var currentOrientation = 0;
