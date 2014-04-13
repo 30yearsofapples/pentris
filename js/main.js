@@ -1,16 +1,66 @@
 const BOARD_HEIGHT = 21;
 const BOARD_WIDTH = 13;
-const PIECE_MAPPING = [
-    null,
-    PIECE_I,PIECE_J,PIECE_L,PIECE_C,PIECE_B,PIECE_D,
-    PIECE_S,PIECE_Z,PIECE_X,PIECE_E,PIECE_F,PIECE_T,
-    PIECE_N,PIECE_O,PIECE_A,PIECE_Q,PIECE_P,PIECE_K
-];
 
 var tickSpeed = 1000;
 var gameTicker = false;
 var pieceCounter = 1;
-var currentPiece = 0;
+
+/*
+ * Piece
+ */
+function Piece(x, y, type, orientation) {
+    this.x = x;
+    this.y = y;
+    this.type = type;
+    this.orientation = orientation;
+    this.structure = PIECE_TYPE[type][orientation];
+}
+
+Piece.prototype.rotate = function() {
+    this.orientation = (this.orientation + 1) % 4;
+    this.structure = PIECE_TYPE[this.type][this.orientation];
+};
+
+Piece.prototype.draw = function(reallyDraw) {
+    for (var j = 0; j < this.structure.length; j++) {
+        for (var i = 0; i < this.structure[j].length; i++) {
+            if (this.structure[j][i]) {
+                if (reallyDraw) {
+                    colorCell(this.x + i, this.y + j, PIECE_COLOR[this.type]);
+                } else {
+                    colorCell(this.x + i, this.y + j, PIECE_COLOR[0]);
+                }
+            }
+        }
+    }
+};
+
+Piece.prototype.move = function(direction) {
+    this.draw(false);
+    
+    switch (direction) {
+        case 1: // Left
+            this.x--;
+            break;
+        case 2: // Right
+            this.x++;
+            break;
+        default: // Down
+            y++;
+            break;
+    }
+    
+    this.draw(true);
+};
+/*
+ * END Piece
+ */
+ 
+function colorCell(x, y, color) {
+    $($('#gameTable>tbody').children()[y].children[x]).css('background', color);
+}
+
+var currentColor = 0;
 var currentOrientation = 0;
 var currentPos = [];
 
@@ -55,7 +105,7 @@ function permutePieces(pieces) {
 }
 
 function colliding(pieceIdx, x, y, orientation) {
-    var piece = PIECE_MAPPING[pieceIdx];
+    var piece = PIECE_TYPE[pieceIdx];
     for (var j = 0; j < piece[orientation].length; j++) {
         for (var i = 0; i < piece[orientation][j].length; i++) {
             if (piece[orientation][j][i]) { // if this is part of the piece
@@ -71,21 +121,21 @@ function colliding(pieceIdx, x, y, orientation) {
 }
 
 function drawPiece(pieceIdx, x, y, orientation) {
-    var piece = PIECE_MAPPING[pieceIdx];
+    var piece = PIECE_TYPE[pieceIdx];
     for (var j = 0; j < piece[orientation].length; j++) {
         for (var i = 0; i < piece[orientation][j].length; i++) {
             if (piece[orientation][j][i])
-                colorCell(x + i, y + j, PIECE_COLORS[pieceIdx]);
+                colorCell(x + i, y + j, PIECE_COLOR[pieceIdx]);
         }
     }
 }
 
 function erasePiece(pieceIdx, x, y, orientation) {
-    var piece = PIECE_MAPPING[pieceIdx];
+    var piece = PIECE_TYPE[pieceIdx];
     for (var j = 0; j < piece[orientation].length; j++) {
         for (var i = 0; i < piece[orientation][j].length; i++) {
             if (piece[orientation][j][i])
-                colorCell(x + i, y + j, PIECE_COLORS[0]);
+                colorCell(x + i, y + j, PIECE_COLOR[0]);
         }
     }
 }
@@ -102,7 +152,7 @@ function clearBoard(clearGameState) {
     for (var j = 0; j < BOARD_HEIGHT; j++) {
         for (var i = 0; i < BOARD_WIDTH; i++) {
             if (clearGameState) gameBoard[j][i] = [0,0];
-            colorCell(i, j, PIECE_COLORS[0]);
+            colorCell(i, j, PIECE_COLOR[0]);
         }
     }
 }
@@ -159,7 +209,7 @@ function clearLines(lines) {
 function paintBoard() {
     for (var j = 0; j < BOARD_HEIGHT; j++) {
         for (var i = 0; i < BOARD_WIDTH; i++) {
-            colorCell(i, j, PIECE_COLORS[gameBoard[j][i][1]]);
+            colorCell(i, j, PIECE_COLOR[gameBoard[j][i][1]]);
         }
     }
 }
@@ -172,31 +222,31 @@ function endGame() {
 }
 
 function movePieceLeft() {
-    if (!colliding(currentPiece, currentPos[0] - 1, currentPos[1], currentOrientation)) {
-        erasePiece(currentPiece, currentPos[0], currentPos[1], currentOrientation);
+    if (!colliding(currentColor, currentPos[0] - 1, currentPos[1], currentOrientation)) {
+        erasePiece(currentColor, currentPos[0], currentPos[1], currentOrientation);
 
         currentPos = [currentPos[0] - 1, currentPos[1]];
-        drawPiece(currentPiece, currentPos[0], currentPos[1], currentOrientation);
+        drawPiece(currentColor, currentPos[0], currentPos[1], currentOrientation);
     }
 }
 
 function movePieceRight() {
-    if (!colliding(currentPiece, currentPos[0] + 1, currentPos[1], currentOrientation)) {
-        erasePiece(currentPiece, currentPos[0], currentPos[1], currentOrientation);
+    if (!colliding(currentColor, currentPos[0] + 1, currentPos[1], currentOrientation)) {
+        erasePiece(currentColor, currentPos[0], currentPos[1], currentOrientation);
 
         currentPos = [currentPos[0] + 1, currentPos[1]];
-        drawPiece(currentPiece, currentPos[0], currentPos[1], currentOrientation);
+        drawPiece(currentColor, currentPos[0], currentPos[1], currentOrientation);
     }
 }
 
 function movePieceDown() {
-    if (!colliding(currentPiece, currentPos[0], currentPos[1] + 1, currentOrientation)) {
-        erasePiece(currentPiece, currentPos[0], currentPos[1], currentOrientation);
+    if (!colliding(currentColor, currentPos[0], currentPos[1] + 1, currentOrientation)) {
+        erasePiece(currentColor, currentPos[0], currentPos[1], currentOrientation);
 
         currentPos = [currentPos[0], currentPos[1] + 1];
-        drawPiece(currentPiece, currentPos[0], currentPos[1], currentOrientation);
+        drawPiece(currentColor, currentPos[0], currentPos[1], currentOrientation);
     } else { // Hit bottom
-        putInGameBoard(pieceCounter, currentPiece, currentPos[0], currentPos[1], currentOrientation);
+        putInGameBoard(pieceCounter, currentColor, currentPos[0], currentPos[1], currentOrientation);
         
         var fullLines = getFullLines();
         if (fullLines.length > 0) {
@@ -210,11 +260,11 @@ function movePieceDown() {
 function rotatePiece() {
     var nextOrientation = (currentOrientation + 1) % 4;
 
-    if (!colliding(currentPiece, currentPos[0], currentPos[1], nextOrientation)) {
-        erasePiece(currentPiece, currentPos[0], currentPos[1], currentOrientation);
+    if (!colliding(currentColor, currentPos[0], currentPos[1], nextOrientation)) {
+        erasePiece(currentColor, currentPos[0], currentPos[1], currentOrientation);
 
         currentOrientation = nextOrientation;
-        drawPiece(currentPiece, currentPos[0], currentPos[1], currentOrientation);
+        drawPiece(currentColor, currentPos[0], currentPos[1], currentOrientation);
     }
 }
 
@@ -233,18 +283,18 @@ function writeDebug() {
 
 function issueNextPiece() {
     pieceCounter++;
-    currentPiece = nextPieces[nextPieceCounter];
+    currentColor = nextPieces[nextPieceCounter];
     //here instead of random, do random bag
-    currentPiece = Math.floor(Math.random()*18) + 1;
-    currentPos = PIECE_START_POS[currentPiece];
+    currentColor = Math.floor(Math.random()*18) + 1;
+    currentPos = PIECE_START_POS[currentColor];
     currentOrientation = 0;
-    drawPiece(currentPiece, PIECE_START_POS[currentPiece][0], PIECE_START_POS[currentPiece][1], currentOrientation);
+    drawPiece(currentColor, PIECE_START_POS[currentColor][0], PIECE_START_POS[currentColor][1], currentOrientation);
 
     nextPieceCounter = (nextPieceCounter + 1) % 18;
 }
 
 function putInGameBoard(pieceCounter, pieceIdx, x, y, orientation) {
-    var piece = PIECE_MAPPING[pieceIdx];
+    var piece = PIECE_TYPE[pieceIdx];
     for (var j = 0; j < piece[orientation].length; j++) {
         for (var i = 0; i < piece[orientation][j].length; i++) {
             if (piece[orientation][j][i]) {

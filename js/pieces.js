@@ -461,7 +461,7 @@ const PIECE_START_POS = [
     [5,2]  // K
 ]
 
-const PIECE_COLORS = [
+const PIECE_COLOR = [
     'transparent',
     '#CC568E', // I
     '#77DA48', // J
@@ -482,3 +482,10 @@ const PIECE_COLORS = [
     '#536A3D', // P
     '#5B4C88'  // K
 ]
+
+const PIECE_TYPE = [
+    null,
+    PIECE_I,PIECE_J,PIECE_L,PIECE_C,PIECE_B,PIECE_D,
+    PIECE_S,PIECE_Z,PIECE_X,PIECE_E,PIECE_F,PIECE_T,
+    PIECE_N,PIECE_O,PIECE_A,PIECE_Q,PIECE_P,PIECE_K
+];
