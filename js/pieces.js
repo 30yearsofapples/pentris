@@ -1,6 +1,6 @@
 // ORDER: (no block) I J L C B D S Z X E F T N O A Q P K
 
-const PIECE_I = [
+var PIECE_I = [
     [
         [0],
         [0],
@@ -27,7 +27,7 @@ const PIECE_I = [
     ]
 ];
 
-const PIECE_J = [
+var PIECE_J = [
     [
         [0],
         [0],
@@ -54,7 +54,7 @@ const PIECE_J = [
     ]
 ];
 
-const PIECE_L = [
+var PIECE_L = [
     [
         [0],
         [0],
@@ -81,7 +81,7 @@ const PIECE_L = [
     ]
 ];
 
-const PIECE_C = [
+var PIECE_C = [
     [
         [0],
         [1,1,1],
@@ -103,7 +103,7 @@ const PIECE_C = [
     ]
 ];
 
-const PIECE_B = [
+var PIECE_B = [
     [
         [0],
         [1,1,1],
@@ -125,7 +125,7 @@ const PIECE_B = [
     ]
 ];
 
-const PIECE_D = [
+var PIECE_D = [
     [
         [0],
         [1,1,1],
@@ -147,7 +147,7 @@ const PIECE_D = [
     ]
 ];
 
-const PIECE_S = [
+var PIECE_S = [
     [
         [1],
         [1,1,1],
@@ -170,7 +170,7 @@ const PIECE_S = [
     ]
 ];
 
-const PIECE_Z = [
+var PIECE_Z = [
     [
         [0,0,1],
         [1,1,1],
@@ -193,7 +193,7 @@ const PIECE_Z = [
     ]
 ];
 
-const PIECE_X = [
+var PIECE_X = [
     [
         [0,1],
         [1,1,1],
@@ -216,7 +216,7 @@ const PIECE_X = [
     ]
 ];
 
-const PIECE_E = [
+var PIECE_E = [
     [
         [0,0,1],
         [1,1,1],
@@ -239,7 +239,7 @@ const PIECE_E = [
     ]
 ];
 
-const PIECE_F = [
+var PIECE_F = [
     [
         [1],
         [1,1,1],
@@ -262,7 +262,7 @@ const PIECE_F = [
     ]
 ];
 
-const PIECE_T = [
+var PIECE_T = [
     [
         [1,1,1],
         [0,1],
@@ -285,7 +285,7 @@ const PIECE_T = [
     ]
 ];
 
-const PIECE_N = [
+var PIECE_N = [
     [
         [1,1,1],
         [1],
@@ -308,7 +308,7 @@ const PIECE_N = [
     ]
 ];
 
-const PIECE_O = [
+var PIECE_O = [
     [
         [0],
         [0],
@@ -335,7 +335,7 @@ const PIECE_O = [
     ]
 ];
 
-const PIECE_A = [
+var PIECE_A = [
     [
         [0],
         [0],
@@ -362,7 +362,7 @@ const PIECE_A = [
     ]
 ];
 
-const PIECE_Q = [
+var PIECE_Q = [
     [
         [0],
         [0],
@@ -389,7 +389,7 @@ const PIECE_Q = [
     ]
 ];
 
-const PIECE_P = [
+var PIECE_P = [
     [
         [0],
         [0],
@@ -416,7 +416,7 @@ const PIECE_P = [
     ]
 ];
 
-const PIECE_K = [
+var PIECE_K = [
     [
         [1,1],
         [0,1,1],
@@ -439,7 +439,7 @@ const PIECE_K = [
     ]
 ];
 
-const PIECE_START_POS = [
+var PIECE_START_POS = [
     null,
     [4,0], // I
     [4,0], // J
@@ -459,9 +459,9 @@ const PIECE_START_POS = [
     [4,0], // Q
     [4,0], // P
     [5,2]  // K
-]
+];
 
-const PIECE_COLOR = [
+var PIECE_COLOR = [
     'transparent',
     '#CC568E', // I
     '#77DA48', // J
@@ -481,9 +481,9 @@ const PIECE_COLOR = [
     '#9A433E', // Q
     '#536A3D', // P
     '#5B4C88'  // K
-]
+];
 
-const PIECE_TYPE = [
+var PIECE_TYPE = [
     null,
     PIECE_I,PIECE_J,PIECE_L,PIECE_C,PIECE_B,PIECE_D,
     PIECE_S,PIECE_Z,PIECE_X,PIECE_E,PIECE_F,PIECE_T,
