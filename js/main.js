@@ -19,14 +19,23 @@ var currentPiece;
 /*
  * Piece
  */
-function Piece(x, y, type, orientation) {
+// Piece constructor.
+// args is either {'type' : t, 'structure' : [...]} or {'type' : t, 'orientation' : o}
+function Piece(x, y, args) {
     this.x = x;
     this.y = y;
-    this.type = type;
-    this.orientation = orientation;
-    this.structure = PIECE_TYPE[type][orientation];
+    
+    if (args.structure) {
+        this.type = args.type;
+        this.structure = clone(args.structure);
+    } else {
+        this.orientation = args.orientation;
+        this.type = args.type;
+        this.structure = clone(PIECE_TYPE[this.type][this.orientation]);
+    }
 }
 
+// Draw the piece in the DOM
 Piece.prototype.draw = function(reallyDraw) {
     for (var j = 0; j < this.structure.length; j++) {
         for (var i = 0; i < this.structure[j].length; i++) {
@@ -39,6 +48,7 @@ Piece.prototype.draw = function(reallyDraw) {
     }
 };
 
+// Mark on cellTaken 2D array for collision detection
 Piece.prototype.mark = function(reallyMark) {
     for (var j = 0; j < this.structure.length; j++) {
         for (var i = 0; i < this.structure[j].length; i++) {
@@ -47,6 +57,11 @@ Piece.prototype.mark = function(reallyMark) {
             }
         }
     }
+};
+
+// Store piece in activePieces
+Piece.prototype.store = function() {
+    activePieces.push(this);
 };
 
 Piece.prototype.move = function(action) {
@@ -65,14 +80,31 @@ Piece.prototype.move = function(action) {
                 break;
             case ACTION.ROTATE:
                 this.orientation = (this.orientation + 1) % 4;
-                this.structure = PIECE_TYPE[this.type][this.orientation];
+                this.structure = clone(PIECE_TYPE[this.type][this.orientation]);
                 break;
         }
         
         this.draw(true);
-    } else if (action == ACTION.DOWN) {
+    } else if (action == ACTION.DOWN) { // Hit something going down
         this.mark(true);
+        this.store();
+        
+        var fullLines = getFullLines();
+        if (fullLines.length > 0) {
+            for (var i = 0; i < activePieces.length; i++) {
+                activePieces[i].draw(false);
+                activePieces[i].mark(false);
+                activePieces[i].clearLines(fullLines);
+            }
+            
+            for (var i = 0; i < activePieces.length; i++) {
+                activePieces[i].draw(true);
+                activePieces[i].mark(true);
+            }
+        }
+        
         issueNewPiece();
+        writeDebug();
     }
 };
 
@@ -105,7 +137,7 @@ Piece.prototype.collides = function(action) {
             testX++;
             break;
         case ACTION.ROTATE:
-            testStructure = PIECE_TYPE[this.type][(this.orientation + 1) % 4];
+            testStructure = clone(PIECE_TYPE[this.type][(this.orientation + 1) % 4]);
             break;
     }
     
@@ -124,18 +156,43 @@ Piece.prototype.collides = function(action) {
     return false;
 };
 
-Piece.prototype.clearLine = function(lines) {
+Piece.prototype.clearLines = function(linesToClear) {
+    var lines = clone(linesToClear);
+
+    // Get lines relative to this.structure
     for (var l = 0; l < lines.length; l++) {
-        if (lines[l] >= this.y && lines[l] <= this.y + this.structure.length) {
-            for (var i = 0; i < this.structure[lines[l] - this.y].length; i++) {
-                this.structure[lines[l] - this.y][i] = 0;
+        lines[l] -= this.y;
+    }
+    
+    for (var j = this.structure.length - 1; j >= 0; j--) {
+        if ($.inArray(j, lines) > -1) {
+            var newPieceStructure = this.structure.splice(j);
+            
+            if (newPieceStructure.length > 1) {
+                // Remove the line that was cleared. This is now a new piece
+                newPieceStructure.shift();
+                
+                activePieces.push(new Piece(this.x, this.y + j + 1, {'type' : this.type, 'structure' : newPieceStructure}));
             }
         }
     }
-}
+};
 /*
  * END Piece
  */
+ 
+// Clones a 1/2D array
+function clone(arr) {
+    var cloneArr = arr.slice(0);
+    
+    for (var i = 0; i < arr.length; i++) {
+        if ($.isArray(arr[i])) {
+            cloneArr[i] = clone(arr[i]);
+        }
+    }
+    
+    return cloneArr;
+}
 
 function cellMarked(x, y) {
     return cellTaken[y][x];
@@ -175,14 +232,15 @@ var cellTaken = [
 
 function issueNewPiece() {
     var newPieceType = Math.floor(Math.random() * 18) + 1;
-    currentPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1], newPieceType, 0);
+    currentPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1],
+                             {'type':newPieceType, 'orientation':0});
     currentPiece.draw(true);
 }
 
 function getFullLines() {
     var fullLines = [];
     
-    for (var j = 0; j < BOARD_HEIGHT; j++) {
+    for (var j = BOARD_HEIGHT - 1; j >= 0; j--) {
         var isFull = true;
         for (var i = 0; i < BOARD_WIDTH; i++) {
             if (!cellMarked(i, j)) {
@@ -253,9 +311,8 @@ function writeDebug() {
     $('#debug').html('');
     for (var j = 0; j < BOARD_HEIGHT; j++) {
         for (var i = 0; i < BOARD_WIDTH; i++) {
-            var pieceStr = gameBoard[j][i][0];
-            if (pieceStr < 10) pieceStr = "&nbsp;" + pieceStr;
-            $('#debug').html($('#debug').html() + pieceStr + ' ');
+            var pieceStr = cellTaken[j][i] ? 1 : 0;
+            $('#debug').html($('#debug').html() + pieceStr + '&nbsp;&nbsp;');
         }
 
         $('#debug').html($('#debug').html() + '<br>');
