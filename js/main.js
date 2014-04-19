@@ -216,11 +216,32 @@ Piece.prototype.clearLines = function(linesToClear) {
             clearedLines = 1;
             var newPieceStructure = this.structure.splice(j);
             
+            // Handle C case
+            if (this.structure.length == 1 &&
+                    this.structure[0].length == 3 &&
+                    this.structure[0][0] == 1 &&
+                    this.structure[0][1] == 0 &&
+                    this.structure[0][2] == 1) {
+                this.structure[0] = [1];
+                
+                activePieces.push(new Piece(this.x + 2, this.y, {'type' : this.type, 'structure' : [[1]]}));
+            }
+            
             if (newPieceStructure.length > 1) {
                 // Remove the line that was cleared. This is now a new piece
                 newPieceStructure.shift();
                 
-                activePieces.push(new Piece(this.x, this.y + j + 1, {'type' : this.type, 'structure' : newPieceStructure}));
+                // Handle C case
+                if (newPieceStructure.length == 1 &&
+                        newPieceStructure[0].length == 3 &&
+                        newPieceStructure[0][0] == 1 &&
+                        newPieceStructure[0][1] == 0 &&
+                        newPieceStructure[0][2] == 1) {
+                    activePieces.push(new Piece(this.x, this.y + j + 1, {'type' : this.type, 'structure' : [[1]]}));
+                    activePieces.push(new Piece(this.x + 2, this.y + j + 1, {'type' : this.type, 'structure' : [[1]]}));
+                } else {
+                    activePieces.push(new Piece(this.x, this.y + j + 1, {'type' : this.type, 'structure' : newPieceStructure}));
+                }
             }
         }
     }
@@ -228,10 +249,11 @@ Piece.prototype.clearLines = function(linesToClear) {
     return clearedLines;
 };
 
+// Returns whether structure is essentially empty
 Piece.prototype.isEmpty = function() {
-    if (!this.structure.length) {
+    if (!this.structure.length) { // Empty structure
         return true;
-    } else {
+    } else { // Non-empty structure. Checking for all false cells
         for (var j = 0; j < this.structure.length; j++) {
             for (var i = 0; i < this.structure[j].length; i++) {
                 if (this.structure[j][i]) {
@@ -242,7 +264,6 @@ Piece.prototype.isEmpty = function() {
         
         return true;
     }
-    return !this.structure.length;
 };
 /*
 ** END Piece
@@ -326,11 +347,14 @@ function markCell(x, y, reallyMark) {
 function colorCell(x, y, color) {
     $($('#gameTable>tbody').children()[y].children[x]).css('background', color);
 }
-
+var counter = 0;
 function issueNewPiece() {
     var newPieceType = Math.floor(Math.random() * 18) + 1;
     
-    //newPieceType=1;
+    if (counter == 4) {
+        newPieceType=4;
+        counter++;
+    }
     
     currentPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1],
                              {'type':newPieceType, 'orientation':0});
