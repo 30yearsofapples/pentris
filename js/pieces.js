@@ -1,4 +1,25 @@
-// ORDER: (no block) I J L C B D S Z X E F T N O A Q P K
+/*
+
+1:I    2:J    3:L    4:C    5:B
+xxxxx  xxxx      x   xxx    xxx    
+          x   xxxx   x x    xx
+
+6:D    7:S    8:Z    9:X    10:E
+xxx    x        x     x       x
+ xx    xxx    xxx    xxx    xxx
+         x    x       x      x
+
+11:F   12:T   13:N   14:O   15:A
+x      xxx    xxx    xxxx   xxxx
+xxx     x     x       x       x
+ x      x     x
+
+16:Q   17:P   18:K
+ xxx   xxx    xx
+xx       xx    xx
+                x
+
+*/
 
 var PIECE_I = [
     [
@@ -441,52 +462,52 @@ var PIECE_K = [
 
 var PIECE_START_POS = [
     null,
-    [4, 0], // I
-    [4, 0], // J
-    [4, 0], // L
-    [5, 1], // C
-    [5, 1], // B
-    [5, 1], // D
-    [5,2], // S
-    [5,2], // Z
-    [5,2], // X
-    [5,2], // E
-    [5,2], // F
-    [5,2], // T
-    [5,2], // N
-    [4, 0], // O
-    [4, 0], // A
-    [4, 0], // Q
-    [4, 0], // P
-    [5,2]  // K
+    [4, 0],    //  1:I
+    [4, 0],    //  2:J
+    [4, 0],    //  3:L
+    [5, 1],    //  4:C
+    [5, 1],    //  5:B
+    [5, 1],    //  6:D
+    [5, 2],    //  7:S
+    [5, 2],    //  8:Z
+    [5, 2],    //  9:X
+    [5, 2],    // 10:E
+    [5, 2],    // 11:F
+    [5, 2],    // 12:T
+    [5, 2],    // 13:N
+    [4, 0],    // 14:O
+    [4, 0],    // 15:A
+    [4, 0],    // 16:Q
+    [4, 0],    // 17:P
+    [5, 2]     // 18:K
 ];
 
 var PIECE_COLOR = [
     'transparent',
-    '#CC568E', // I
-    '#77DA48', // J
-    '#83CBC7', // L
-    '#C38536', // C
-    '#8277D8', // B
-    '#483523', // D
-    '#DA4A39', // S
-    '#CDAB90', // Z
-    '#D3CF50', // X
-    '#CB51CE', // E
-    '#83D693', // F
-    '#ABA7CE', // T
-    '#4C6770', // N
-    '#679337', // O
-    '#582C4B', // A
-    '#9A433E', // Q
-    '#536A3D', // P
-    '#5B4C88'  // K
+    '#CC568E', //  1:I
+    '#77DA48', //  2:J
+    '#83CBC7', //  3:L
+    '#C38536', //  4:C
+    '#8277D8', //  5:B
+    '#483523', //  6:D
+    '#DA4A39', //  7:S
+    '#CDAB90', //  8:Z
+    '#D3CF50', //  9:X
+    '#CB51CE', // 10:E
+    '#83D693', // 11:F
+    '#ABA7CE', // 12:T
+    '#4C6770', // 13:N
+    '#679337', // 14:O
+    '#582C4B', // 15:A
+    '#9A433E', // 16:Q
+    '#536A3D', // 17:P
+    '#5B4C88'  // 18:K
 ];
 
 var PIECE_TYPE = [
     null,
-    PIECE_I,PIECE_J,PIECE_L,PIECE_C,PIECE_B,
-    PIECE_D,PIECE_S,PIECE_Z,PIECE_X,PIECE_E,
-    PIECE_F,PIECE_T,PIECE_N,PIECE_O,PIECE_A,
-    PIECE_Q,PIECE_P,PIECE_K
+    PIECE_I, PIECE_J, PIECE_L, PIECE_C, PIECE_B,
+    PIECE_D, PIECE_S, PIECE_Z, PIECE_X, PIECE_E,
+    PIECE_F, PIECE_T, PIECE_N, PIECE_O, PIECE_A,
+    PIECE_Q, PIECE_P, PIECE_K
 ];

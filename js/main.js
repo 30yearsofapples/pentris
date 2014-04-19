@@ -1,4 +1,4 @@
-$(function() {
+//$(function() {
 
 var BOARD_HEIGHT = 21;
 var BOARD_WIDTH = 13;
@@ -51,7 +51,6 @@ var currentPiece;
 function Piece(x, y, args) {
     this.x = x;
     this.y = y;
-    this.placed = 0;
     
     if (args.structure) {
         this.type = args.type;
@@ -99,7 +98,6 @@ Piece.prototype.move = function(action) {
         
         switch (action) {
             case ACTION.DOWN:
-            case ACTION.DROP:
                 this.y++;
                 break;
             case ACTION.LEFT:
@@ -112,6 +110,11 @@ Piece.prototype.move = function(action) {
                 this.orientation = (this.orientation + 1) % 4;
                 this.structure = clone(PIECE_TYPE[this.type][this.orientation]);
                 break;
+            case ACTION.DROP:
+                this.mark(false);
+                this.y++;
+                this.mark(true);
+                break;
         }
         
         this.draw(true);
@@ -122,7 +125,9 @@ Piece.prototype.move = function(action) {
             this.mark(true);
             this.store();
             
-            checkAndClear();
+            if (checkAndClear()) {
+                dropPieces();
+            }
             
             issueNewPiece();
             writeDebug();
@@ -152,13 +157,14 @@ Piece.prototype.drop = function() {
 
 // Returns true if performing an action would result in a collision
 Piece.prototype.collides = function(action) {
+    var willCollide = false;
+
     var testStructure = clone(this.structure);
     var testX = this.x;
     var testY = this.y;
 
     switch (action) {
         case ACTION.DOWN:
-        case ACTION.DROP:
             testY++;
             break;
         case ACTION.LEFT:
@@ -170,6 +176,10 @@ Piece.prototype.collides = function(action) {
         case ACTION.ROTATE:
             testStructure = clone(PIECE_TYPE[this.type][(this.orientation + 1) % 4]);
             break;
+        case ACTION.DROP:
+            testY++;
+            this.mark(false);
+            break;
     }
     
     for (var j = 0; j < testStructure.length; j++) {
@@ -178,13 +188,17 @@ Piece.prototype.collides = function(action) {
                 if (testX + i < 0 || testX + i >= BOARD_WIDTH ||
                         testY + j >= BOARD_HEIGHT ||
                         cellMarked(testX + i, testY + j)) {
-                    return true;
+                    willCollide = true;
                 }
             }
         }
     }
     
-    return false;
+    if (action == ACTION.DROP) {
+        this.mark(true);
+    }
+    
+    return willCollide;
 };
 
 // Clear lines. Argument is in terms of the game grid. Returns true if cleared lines
@@ -215,6 +229,19 @@ Piece.prototype.clearLines = function(linesToClear) {
 };
 
 Piece.prototype.isEmpty = function() {
+    if (!this.structure.length) {
+        return true;
+    } else {
+        for (var j = 0; j < this.structure.length; j++) {
+            for (var i = 0; i < this.structure[j].length; i++) {
+                if (this.structure[j][i]) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
     return !this.structure.length;
 };
 /*
@@ -257,6 +284,8 @@ function dropPieces() {
                 somethingHappened = 1;
             }
         }
+        
+        removeEmptyPieces();
     }
 }
 
@@ -265,8 +294,12 @@ function removeEmptyPieces() {
     for (var i = 0; i < activePieces.length; i++) {
         if (activePieces[i].isEmpty()) {
             activePieces.splice(i, 1);
+            
+            return true;
         }
     }
+    
+    return false;
 }
 
 // Clones an array
@@ -296,6 +329,9 @@ function colorCell(x, y, color) {
 
 function issueNewPiece() {
     var newPieceType = Math.floor(Math.random() * 18) + 1;
+    
+    //newPieceType=1;
+    
     currentPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1],
                              {'type':newPieceType, 'orientation':0});
     currentPiece.draw(true);
@@ -407,4 +443,4 @@ $('html').keydown(function(event) {
     
 });
 
-});
+//});
