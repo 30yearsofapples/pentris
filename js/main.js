@@ -2,10 +2,10 @@
 
 var BOARD_HEIGHT = 21;
 var BOARD_WIDTH = 13;
-var DOWN_SPEED = 60;
-var SIDE_SPEED = 90;
+var DOWN_SPEED = 70;
+var SIDE_SPEED = 100;
 
-var tickSpeed = 1000;
+var tickSpeed = 500;
 var gameTicker = false;
 
 var ACTION = {
@@ -15,6 +15,8 @@ var ACTION = {
     ROTATE: 3,
     DROP: 4
 };
+
+var score = 0;
 
 var activePieces = [];
 
@@ -123,9 +125,9 @@ Piece.prototype.store = function() {
 
 // Performs an action
 Piece.prototype.move = function(action) {
+    this.draw(false);
     if (!this.collides(action)) {
-        this.draw(false);
-
+        //this.draw(false);
         switch (action) {
             case ACTION.DOWN:
                 this.y++;
@@ -151,6 +153,7 @@ Piece.prototype.move = function(action) {
 
         return 1;
     } else { // Collides
+        this.draw(true);
         if (action == ACTION.DOWN) { // Hit something moving down
             this.mark(true);
             this.store();
@@ -212,23 +215,52 @@ Piece.prototype.collides = function(action) {
             break;
     }
 
-    for (var j = 0; j < testStructure.length; j++) {
-        for (var i = 0; i < testStructure[j].length; i++) {
-            if (testStructure[j][i]) {
-                if (testX + i < 0 || testX + i >= BOARD_WIDTH ||
-                        testY + j >= BOARD_HEIGHT ||
-                        cellMarked(testX + i, testY + j)) {
-                    willCollide = true;
-                }
-            }
-        }
-    }
+    willCollide = this.collidesHelper(testX, testY, testStructure, action);
 
     if (action == ACTION.DROP) {
         this.mark(true);
     }
 
     return willCollide;
+};
+
+Piece.prototype.collidesHelper = function(testX, testY, testStructure, action) {
+    for (var j = 0; j < testStructure.length; j++) {
+        for (var i = 0; i < testStructure[j].length; i++) {
+            if (testStructure[j][i]) {
+                if (testX + i < 0 || testX + i >= BOARD_WIDTH ||
+                        testY + j >= BOARD_HEIGHT ||
+                        cellMarked(testX + i, testY + j)) {
+                    if (action == ACTION.ROTATE) {
+                        // Rotate on the side pushes off
+                        if (testX + i < 0) {
+                            if (!this.collidesHelper(testX + 1, testY, testStructure, action)) {
+                                //this.draw(false);
+                                this.x++;
+                                return false;
+                            } else {
+                                return true;
+                            }
+                        } else if (testX + i >= BOARD_WIDTH) {
+                            if (!this.collidesHelper(testX - 1, testY, testStructure, action)) {
+                                //this.draw(false);
+                                this.x--;
+                                return false;
+                            } else {
+                                return true;
+                            }
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    
+    return false;
 };
 
 // Clear lines. Argument is in terms of the game grid. Returns true if cleared lines
@@ -303,6 +335,8 @@ Piece.prototype.isEmpty = function() {
 function checkAndClear() {
     var fullLines = getFullLines();
 
+    updateScore(fullLines.length);
+    
     if (fullLines.length > 0) {
         checkAndClearHelper(fullLines);
 
@@ -312,6 +346,13 @@ function checkAndClear() {
     }
 
     return 0;
+}
+
+// Updates score
+function updateScore(linesCleared) {
+    score += linesCleared * 10;
+    
+    $('#score').html('SCORE: ' + score);
 }
 
 // Clear lines and draw the pieces

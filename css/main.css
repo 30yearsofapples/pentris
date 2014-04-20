@@ -22,6 +22,7 @@ html {
     font-size: 1em;
     line-height: 1.4;
     background: #eee;
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
 
 /*
@@ -140,16 +141,17 @@ textarea {
     width: 20px;
 }
 
-
-/*
-#debug {
-    float: left;
-    margin: 11px;
-    font-size: 12px;
-    font-family: Consolos, Monaco, "Courier New", monospace;
-    line-height: 23px;
+.floatClear {
+    clear: both;
 }
-*/
+
+#score {
+    margin: 10px auto;
+    width: 300px;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 1.5em;
+}
 
 /* ==========================================================================
    Helper classes
