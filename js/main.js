@@ -6,7 +6,7 @@ var DOWN_SPEED = 70;
 var SIDE_SPEED = 100;
 
 var tickSpeed = 500;
-var gameTicker = false;
+var gameActive = false;
 
 var ACTION = {
     DOWN: 0,
@@ -18,7 +18,13 @@ var ACTION = {
 
 var score = 0;
 
+var linesClearedTransaction = 0;
+
 var activePieces = [];
+var holdPiece;
+var holdOkay = true;
+
+var gameStarted = false;
 
 var nextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
 var nextNextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
@@ -107,6 +113,19 @@ Piece.prototype.drawNextPiece = function(num, reallyDraw) {
     }
 };
 
+// Draw the piece in the hold piece
+Piece.prototype.drawHoldPiece = function(reallyDraw) {
+    for (var j = 0; j < this.structure.length; j++) {
+        for (var i = 0; i < this.structure[j].length; i++) {
+            if (this.structure[j][i]) {
+                var color = reallyDraw ? PIECE_COLOR[this.type] : PIECE_COLOR[0];
+
+                colorCellHoldPiece(this.x + i, this.y + j, color);
+            }
+        }
+    }
+};
+
 // Mark on cellTaken 2D array for collision detection
 Piece.prototype.mark = function(reallyMark) {
     for (var j = 0; j < this.structure.length; j++) {
@@ -145,7 +164,6 @@ Piece.prototype.move = function(action) {
             case ACTION.DROP:
                 this.mark(false);
                 this.y++;
-                this.mark(true);
                 break;
         }
 
@@ -162,11 +180,11 @@ Piece.prototype.move = function(action) {
                 dropPieces();
             }
 
-            issueNewPiece();
-            //writeDebug();
+            issueNewPiece(0);
 
             return 2;
         } else if (action == ACTION.DROP) { // Hit something going down as a result of a cleared line
+            this.mark(true);
             return checkAndClear();
         }
     }
@@ -235,7 +253,6 @@ Piece.prototype.collidesHelper = function(testX, testY, testStructure, action) {
                         // Rotate on the side pushes off
                         if (testX + i < 0) {
                             if (!this.collidesHelper(testX + 1, testY, testStructure, action)) {
-                                //this.draw(false);
                                 this.x++;
                                 return false;
                             } else {
@@ -243,7 +260,6 @@ Piece.prototype.collidesHelper = function(testX, testY, testStructure, action) {
                             }
                         } else if (testX + i >= BOARD_WIDTH) {
                             if (!this.collidesHelper(testX - 1, testY, testStructure, action)) {
-                                //this.draw(false);
                                 this.x--;
                                 return false;
                             } else {
@@ -334,10 +350,11 @@ Piece.prototype.isEmpty = function() {
 // Check the game grid for full lines and clear them
 function checkAndClear() {
     var fullLines = getFullLines();
-
-    updateScore(fullLines.length);
+    var numLines = fullLines.length;
     
-    if (fullLines.length > 0) {
+    if (numLines > 0) {
+        linesClearedTransaction += numLines;
+        
         checkAndClearHelper(fullLines);
 
         removeEmptyPieces();
@@ -349,9 +366,7 @@ function checkAndClear() {
 }
 
 // Updates score
-function updateScore(linesCleared) {
-    score += linesCleared * 10;
-    
+function updateScore(score) {
     $('#score').html('SCORE: ' + score);
 }
 
@@ -415,21 +430,88 @@ function colorCellNextPiece(num, x, y, color) {
     $($('#nextPiece' + num).children()[y].children[x]).css('background', color);
 }
 
-function issueNewPiece() {
-    var newPieceType = getNextPiece();
+function colorCellHoldPiece(x, y, color) {
+    $($('#holdPiece').children()[y].children[x]).css('background', color);
+}
+
+// Issues a new piece.
+// If pieceType is 0, you get the true next piece
+// If pieceType is -1, you get the true next piece, but is coming from a hold command
+function issueNewPiece(pieceType) {
+    score += linesClearedTransaction * linesClearedTransaction * 10;
+    updateScore(score);
+    linesClearedTransaction = 0;
     
+    var newPieceType;
+    if (pieceType === 0) {
+        newPieceType = getNextPiece();
+        holdOkay = true;
+    } else if (pieceType == -1) {
+        newPieceType = getNextPiece();
+    } else {
+        newPieceType = pieceType;
+    }
+
     var nextPieceTypes = getPreviewPieces();
     
     clearPreview();
     var previewPiece;
     for (var p = 0; p < nextPieceTypes.length; p++) {
-        previewPiece = new Piece(PIECE_PREVIEW_POS[nextPieceTypes[p]][0], PIECE_PREVIEW_POS[nextPieceTypes[p]][1], {'type':nextPieceTypes[p], 'orientation':0});
+        previewPiece = new Piece(PIECE_PREVIEW_POS[nextPieceTypes[p]][0], PIECE_PREVIEW_POS[nextPieceTypes[p]][1],
+                                 {'type':nextPieceTypes[p], 'orientation':0});
         previewPiece.drawNextPiece(p, true);
     }
 
     currentPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1],
                              {'type':newPieceType, 'orientation':0});
     currentPiece.draw(true);
+    
+    // Check for game over
+    var testPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1] - 1,
+                              {'type':newPieceType, 'orientation':0});
+    
+    if (testPiece.collides(ACTION.DOWN)) {
+        endGame();
+    }
+}
+
+function endGame() {
+    clearInterval(gameActive);
+    gameActive = false;
+    gameStarted = false;
+    
+    $('#gameOverlay').html('<span id="gameOverSpan">GAME OVER</span>');
+    $('#gameOverlay').css('background', 'rgba(238, 238, 238, 0.4)');
+}
+
+// Swaps current piece with hold piece
+function hold() {
+    if (holdOkay) {
+        holdOkay = false;
+        
+        currentPiece.draw(false);
+        
+        if (holdPiece) {
+            var holdPieceType = holdPiece.type;
+            
+            holdPiece.drawHoldPiece(false);
+            
+            holdPiece = new Piece(PIECE_PREVIEW_POS[currentPiece.type][0], PIECE_PREVIEW_POS[currentPiece.type][1],
+                                  {'type':currentPiece.type, 'orientation':0});
+            
+            currentPiece = new Piece(PIECE_START_POS[holdPieceType][0], PIECE_START_POS[holdPieceType][1],
+                                     {'type':holdPieceType, 'orientation':0});
+            currentPiece.draw(true);
+        } else {
+            holdPiece = new Piece(PIECE_PREVIEW_POS[currentPiece.type][0], PIECE_PREVIEW_POS[currentPiece.type][1],
+                                  {'type':currentPiece.type, 'orientation':0});
+            
+            issueNewPiece(-1);
+        }
+        
+        
+        holdPiece.drawHoldPiece(true);
+    }
 }
 
 function clearPreview() {
@@ -457,6 +539,7 @@ function getPreviewPieces() {
     }
 }
 
+// Get the lines that are completely filled
 function getFullLines() {
     var fullLines = [];
 
@@ -479,14 +562,29 @@ function getFullLines() {
 
 function startNewGame() {
     clearBoard(true);
+    
+    gameStarted = true;
+    
+    holdOkay = true;
+    if (holdPiece) {
+        holdPiece.drawHoldPiece(false);
+        holdPiece = undefined;
+    }
+    
+    $('#gameOverlay').html('');
+    $('#gameOverlay').css('background', 'transparent');
+    
+    linesClearedTransaction = 0;
+    score = 0;
+    updateScore(0);
 
     nextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
     nextNextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
     
-    issueNewPiece();
+    issueNewPiece(0);
 
-    if (!gameTicker) {
-        gameTicker = setInterval(gameTick, tickSpeed);
+    if (!gameActive) {
+        gameActive = setInterval(gameTick, tickSpeed);
     }
 }
 
@@ -514,19 +612,22 @@ function permutePieces(pieces) {
 }
 
 function gameTick() {
-    //currentPiece.down();
+    currentPiece.down();
 }
 
-function writeDebug() {
-    $('#debug').html('');
-    for (var j = 0; j < BOARD_HEIGHT; j++) {
-        for (var i = 0; i < BOARD_WIDTH; i++) {
-            var pieceStr = cellTaken[j][i] ? 1 : 0;
-            $('#debug').html($('#debug').html() + pieceStr + '&nbsp;&nbsp;');
+function pause() {
+    if (gameActive) {
+        clearInterval(gameActive);
+        gameActive = false;
+        $('#gameOverlay').html('PAUSED');
+        $('#gameOverlay').css('background', '#eee');
+    } else {
+        if (gameStarted) {
+            gameActive = setInterval(gameTick, tickSpeed);
+            $('#gameOverlay').html('');
+            $('#gameOverlay').css('background', 'transparent');
         }
-
-        $('#debug').html($('#debug').html() + '<br>');
-    }
+    }   
 }
 
 var leftInterval = 0;
@@ -535,28 +636,46 @@ var downInterval = 0;
 $('html').keydown(function(event) {
     switch (event.keyCode) {
         case 38: // UP
-            currentPiece.rotate();
+            if (gameActive) {
+                currentPiece.rotate();
+            }
             break;
         case 37: // LEFT
-            if (!leftInterval) {
-                currentPiece.left();
-                leftInterval = setInterval(function() { currentPiece.left(); }, SIDE_SPEED);
+            if (gameActive) {
+                if (!leftInterval) {
+                    currentPiece.left();
+                    leftInterval = setInterval(function() { currentPiece.left(); }, SIDE_SPEED);
+                }
             }
             break;
         case 39: // RIGHT
-            if (!rightInterval) {
-                currentPiece.right();
-                rightInterval = setInterval(function() { currentPiece.right(); }, SIDE_SPEED);
+            if (gameActive) {
+                if (!rightInterval) {
+                    currentPiece.right();
+                    rightInterval = setInterval(function() { currentPiece.right(); }, SIDE_SPEED);
+                }
             }
             break;
         case 40: // DOWN
-            if (!downInterval) {
-                currentPiece.down();
-                downInterval = setInterval(function() { currentPiece.down(); }, DOWN_SPEED);
+            if (gameActive) {
+                if (!downInterval) {
+                    currentPiece.down();
+                    downInterval = setInterval(function() { currentPiece.down(); }, DOWN_SPEED);
+                }
             }
             break;
         case 32: // SPACE
-            while (currentPiece.down() != 2) {}
+            if (gameActive) {
+                while (currentPiece.down() != 2) {}
+            }
+            break;
+        case 67: // C
+            if (gameActive) {
+                hold();
+            }
+            break;
+        case 80: // P
+            pause();
             break;
         case 13: // ENTER
             startNewGame();
