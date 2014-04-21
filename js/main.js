@@ -4,6 +4,8 @@ var BOARD_HEIGHT = 21;
 var BOARD_WIDTH = 13;
 var DOWN_SPEED = 70;
 var SIDE_SPEED = 100;
+var CLEAR_LINE_DELAY = 200;
+var DROP_DELAY = 200;
 
 var tickSpeed = 500;
 var gameActive = false;
@@ -146,7 +148,6 @@ Piece.prototype.store = function() {
 Piece.prototype.move = function(action) {
     this.draw(false);
     if (!this.collides(action)) {
-        //this.draw(false);
         switch (action) {
             case ACTION.DOWN:
                 this.y++;
@@ -176,16 +177,12 @@ Piece.prototype.move = function(action) {
             this.mark(true);
             this.store();
 
-            if (checkAndClear()) {
-                dropPieces();
-            }
-
-            issueNewPiece(0);
+            checkAndClear(true);
 
             return 2;
         } else if (action == ACTION.DROP) { // Hit something going down as a result of a cleared line
             this.mark(true);
-            return checkAndClear();
+            return 0;
         }
     }
 };
@@ -348,30 +345,25 @@ Piece.prototype.isEmpty = function() {
 **/
 
 // Check the game grid for full lines and clear them
-function checkAndClear() {
+function checkAndClear(delay) {
     var fullLines = getFullLines();
-    var numLines = fullLines.length;
     
-    if (numLines > 0) {
-        linesClearedTransaction += numLines;
+    if (fullLines.length > 0) {
+        linesClearedTransaction += fullLines.length;
         
-        checkAndClearHelper(fullLines);
-
-        removeEmptyPieces();
-
-        return 1;
+        pause(false);
+        if (delay) {
+            setTimeout(function(){checkAndClearHelper(fullLines, delay)}, CLEAR_LINE_DELAY);
+        } else {
+            checkAndClearHelper(fullLines, delay);
+        }
+    } else {
+        checkAndClearHelper(fullLines, delay);
     }
-
-    return 0;
-}
-
-// Updates score
-function updateScore(score) {
-    $('#score').html('SCORE: ' + score);
 }
 
 // Clear lines and draw the pieces
-function checkAndClearHelper(fullLines) {
+function checkAndClearHelper(fullLines, delay) {
     for (var i = 0; i < activePieces.length; i++) {
         activePieces[i].draw(false);
         activePieces[i].mark(false);
@@ -383,35 +375,51 @@ function checkAndClearHelper(fullLines) {
         activePieces[i].draw(true);
         activePieces[i].mark(true);
     }
+    
+    if (fullLines.length > 0) {
+        setTimeout(function(){dropPieces()}, DROP_DELAY);
+    } else {
+        issueNewPiece(0);
+        unpause(false);
+    }
 }
 
 // Drop all pieces until they all hit the bottom
 function dropPieces() {
-    var somethingHappened = true;
+    var somethingHappened = false;
 
-    while (somethingHappened) {
-        somethingHappened = false;
-        for (var p = 0; p < activePieces.length; p++) {
-            if (activePieces[p].drop()) {
-                somethingHappened = true;
-            }
+    removeEmptyPieces();
+
+    for (var p = 0; p < activePieces.length; p++) {
+        if (activePieces[p].drop()) {
+            somethingHappened = true;
         }
-
-        removeEmptyPieces();
     }
+    
+    if (somethingHappened) {
+        setTimeout(function(){dropPieces()}, DROP_DELAY);
+    } else {
+        checkAndClear(false);
+    }
+}
+
+// Updates score
+function updateScore(score) {
+    $('#score').html('SCORE: ' + score);
 }
 
 // Removes the pieces from activePieces that have an empty structure
 function removeEmptyPieces() {
-    for (var i = 0; i < activePieces.length; i++) {
+    var removedPiece = false
+    for (var i = activePieces.length - 1; i >= 0; i--) {
         if (activePieces[i].isEmpty()) {
             activePieces.splice(i, 1);
 
-            return true;
+            removedPiece = true;
         }
     }
 
-    return false;
+    return removedPiece;
 }
 
 function cellMarked(x, y) {
@@ -615,19 +623,35 @@ function gameTick() {
     currentPiece.down();
 }
 
-function pause() {
+function togglePause(displayOverlay) {
+    if (gameActive) {
+        pause(displayOverlay)
+    } else {
+        unpause(displayOverlay)
+    }   
+}
+
+function pause(displayOverlay) {
     if (gameActive) {
         clearInterval(gameActive);
         gameActive = false;
-        $('#gameOverlay').html('PAUSED');
-        $('#gameOverlay').css('background', '#eee');
-    } else {
+        if (displayOverlay) {
+            $('#gameOverlay').html('PAUSED');
+            $('#gameOverlay').css('background', '#eee');
+        }
+    }
+}
+
+function unpause(displayOverlay) {
+    if (!gameActive) {
         if (gameStarted) {
             gameActive = setInterval(gameTick, tickSpeed);
-            $('#gameOverlay').html('');
-            $('#gameOverlay').css('background', 'transparent');
+            if (displayOverlay) {
+                $('#gameOverlay').html('');
+                $('#gameOverlay').css('background', 'transparent');
+            }
         }
-    }   
+    }
 }
 
 var leftInterval = 0;
@@ -675,7 +699,7 @@ $('html').keydown(function(event) {
             }
             break;
         case 80: // P
-            pause();
+            togglePause(true);
             break;
         case 13: // ENTER
             startNewGame();

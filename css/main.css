@@ -8,6 +8,11 @@ html {
 #container {
     margin: 0px auto;
     width: 578px;
+    position: relative;
+}
+
+#gameArea {
+    margin-top: 100px;
 }
 
 #gameOverlay {
