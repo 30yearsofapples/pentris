@@ -18,6 +18,17 @@ var ACTION = {
     DROP: 4
 };
 
+var ENCOURAGEMENT_TEXT = [
+    '',
+    '',
+    'COOL',
+    'GOOD JOB!',
+    'WOW',
+    'SUCH LINES',
+    'VERY SKILL',
+    'UNBERIEVABRE!',
+];
+
 var score = 0;
 
 var linesClearedTransaction = 0;
@@ -56,19 +67,7 @@ var cellTaken = [
 ];
 
 var currentPiece;
-
-// Clones an array
-function clone(arr) {
-    var cloneArr = arr.slice(0);
-
-    for (var i = 0; i < arr.length; i++) {
-        if ($.isArray(arr[i])) {
-            cloneArr[i] = clone(arr[i]);
-        }
-    }
-
-    return cloneArr;
-}
+var ghostPiece;
 
 /*
 ** BEGIN Piece
@@ -95,6 +94,16 @@ Piece.prototype.draw = function(reallyDraw) {
         for (var i = 0; i < this.structure[j].length; i++) {
             if (this.structure[j][i]) {
                 var color = reallyDraw ? PIECE_COLOR[this.type] : PIECE_COLOR[0];
+                
+                if (this.isGhost) {
+                    if (reallyDraw) {
+                        cellOpacity(this.x + i, this.y + j, 0.2);
+                    } else {
+                        cellOpacity(this.x + i, this.y + j, 1);
+                    }
+                } else {
+                    cellOpacity(this.x + i, this.y + j, 1);
+                }
 
                 colorCell(this.x + i, this.y + j, color);
             }
@@ -146,6 +155,9 @@ Piece.prototype.store = function() {
 
 // Performs an action
 Piece.prototype.move = function(action) {
+    if (action != ACTION.DROP) {
+        ghostPiece.draw(false);
+    }
     this.draw(false);
     if (!this.collides(action)) {
         switch (action) {
@@ -154,13 +166,24 @@ Piece.prototype.move = function(action) {
                 break;
             case ACTION.LEFT:
                 this.x--;
+                ghostPiece.x = this.x;
+                ghostPiece.y = this.y;
+                ghostPiece.dropGhost();
                 break;
             case ACTION.RIGHT:
                 this.x++;
+                ghostPiece.x = this.x;
+                ghostPiece.y = this.y;
+                ghostPiece.dropGhost();
                 break;
             case ACTION.ROTATE:
                 this.orientation = (this.orientation + 1) % 4;
                 this.structure = clone(PIECE_TYPE[this.type][this.orientation]);
+                ghostPiece.orientation = this.orientation;
+                ghostPiece.structure = clone(this.structure);
+                ghostPiece.x = this.x;
+                ghostPiece.y = this.y;
+                ghostPiece.dropGhost();
                 break;
             case ACTION.DROP:
                 this.mark(false);
@@ -168,10 +191,16 @@ Piece.prototype.move = function(action) {
                 break;
         }
 
+        if (action != ACTION.DROP) {
+            ghostPiece.draw(true);
+        }
         this.draw(true);
 
         return 1;
     } else { // Collides
+        if (action != ACTION.DROP) {
+            ghostPiece.draw(true);
+        }
         this.draw(true);
         if (action == ACTION.DOWN) { // Hit something moving down
             this.mark(true);
@@ -201,6 +230,31 @@ Piece.prototype.rotate = function() {
 };
 Piece.prototype.drop = function() {
     return this.move(ACTION.DROP);
+};
+
+Piece.prototype.dropGhost = function() {
+    this.y = this.dropGhostHelper(this.x, this.y, this.structure);
+};
+
+Piece.prototype.dropGhostHelper = function(testX, testY, testStructure) {
+    var beforeCollisionY = testY;
+
+    while (true) {
+        for (var j = 0; j < testStructure.length; j++) {
+            for (var i = 0; i < testStructure[j].length; i++) {
+                if (testStructure[j][i]) {
+                    if (beforeCollisionY + j >= BOARD_HEIGHT || cellMarked(testX + i, beforeCollisionY + j)) {
+                        if (beforeCollisionY > testY) {
+                            return beforeCollisionY - 1;
+                        } else {
+                            return testY;
+                        }
+                    }
+                }
+            }
+        }
+        beforeCollisionY++;
+    }
 };
 
 // Returns true if performing an action would result in a collision
@@ -276,6 +330,19 @@ Piece.prototype.collidesHelper = function(testX, testY, testStructure, action) {
     return false;
 };
 
+// Clones an array
+function clone(arr) {
+    var cloneArr = arr.slice(0);
+
+    for (var i = 0; i < arr.length; i++) {
+        if ($.isArray(arr[i])) {
+            cloneArr[i] = clone(arr[i]);
+        }
+    }
+
+    return cloneArr;
+}
+
 // Clear lines. Argument is in terms of the game grid. Returns true if cleared lines
 Piece.prototype.clearLines = function(linesToClear) {
     var lines = clone(linesToClear);
@@ -347,23 +414,36 @@ Piece.prototype.isEmpty = function() {
 // Check the game grid for full lines and clear them
 function checkAndClear(delay) {
     var fullLines = getFullLines();
+    var numFullLines = fullLines.length;
     
-    if (fullLines.length > 0) {
-        linesClearedTransaction += fullLines.length;
+    if (numFullLines > 0) {
+        linesClearedTransaction += numFullLines;
+        
+        showEncouragement(linesClearedTransaction);
         
         pause(false);
         if (delay) {
-            setTimeout(function(){checkAndClearHelper(fullLines, delay)}, CLEAR_LINE_DELAY);
+            setTimeout(function(){checkAndClearHelper(fullLines);}, CLEAR_LINE_DELAY);
         } else {
-            checkAndClearHelper(fullLines, delay);
+            checkAndClearHelper(fullLines);
         }
     } else {
-        checkAndClearHelper(fullLines, delay);
+        checkAndClearHelper(fullLines);
     }
 }
 
+// Splash encourage text
+function showEncouragement(lines) {
+    var encouragementTextIdx = lines;
+    if (lines > ENCOURAGEMENT_TEXT.length) {
+        encouragementTextIdx = ENCOURAGEMENT_TEXT.length - 1;
+    }
+    $('#encouragement').html(ENCOURAGEMENT_TEXT[encouragementTextIdx]);
+    $('#encouragement').fadeIn(100).delay(200).fadeOut(150);
+}
+
 // Clear lines and draw the pieces
-function checkAndClearHelper(fullLines, delay) {
+function checkAndClearHelper(fullLines) {
     for (var i = 0; i < activePieces.length; i++) {
         activePieces[i].draw(false);
         activePieces[i].mark(false);
@@ -377,7 +457,7 @@ function checkAndClearHelper(fullLines, delay) {
     }
     
     if (fullLines.length > 0) {
-        setTimeout(function(){dropPieces()}, DROP_DELAY);
+        setTimeout(function(){dropPieces();}, DROP_DELAY);
     } else {
         issueNewPiece(0);
         unpause(false);
@@ -397,7 +477,7 @@ function dropPieces() {
     }
     
     if (somethingHappened) {
-        setTimeout(function(){dropPieces()}, DROP_DELAY);
+        setTimeout(function(){dropPieces();}, DROP_DELAY);
     } else {
         checkAndClear(false);
     }
@@ -410,7 +490,7 @@ function updateScore(score) {
 
 // Removes the pieces from activePieces that have an empty structure
 function removeEmptyPieces() {
-    var removedPiece = false
+    var removedPiece = false;
     for (var i = activePieces.length - 1; i >= 0; i--) {
         if (activePieces[i].isEmpty()) {
             activePieces.splice(i, 1);
@@ -432,6 +512,10 @@ function markCell(x, y, reallyMark) {
 
 function colorCell(x, y, color) {
     $($('#gameTable>tbody').children()[y].children[x]).css('background', color);
+}
+
+function cellOpacity(x, y, opacity) {
+    $($('#gameTable>tbody').children()[y].children[x]).css('opacity', opacity);
 }
 
 function colorCellNextPiece(num, x, y, color) {
@@ -470,6 +554,12 @@ function issueNewPiece(pieceType) {
         previewPiece.drawNextPiece(p, true);
     }
 
+    ghostPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1],
+                           {'type':newPieceType, 'orientation':0});
+    ghostPiece.isGhost = true;
+    ghostPiece.dropGhost();
+    ghostPiece.draw(true);
+    
     currentPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1],
                              {'type':newPieceType, 'orientation':0});
     currentPiece.draw(true);
@@ -483,6 +573,7 @@ function issueNewPiece(pieceType) {
     }
 }
 
+// End the game
 function endGame() {
     clearInterval(gameActive);
     gameActive = false;
@@ -497,6 +588,7 @@ function hold() {
     if (holdOkay) {
         holdOkay = false;
         
+        ghostPiece.draw(false);
         currentPiece.draw(false);
         
         if (holdPiece) {
@@ -506,9 +598,16 @@ function hold() {
             
             holdPiece = new Piece(PIECE_PREVIEW_POS[currentPiece.type][0], PIECE_PREVIEW_POS[currentPiece.type][1],
                                   {'type':currentPiece.type, 'orientation':0});
-            
+                                  
             currentPiece = new Piece(PIECE_START_POS[holdPieceType][0], PIECE_START_POS[holdPieceType][1],
                                      {'type':holdPieceType, 'orientation':0});
+            
+            ghostPiece = new Piece(PIECE_START_POS[holdPieceType][0], PIECE_START_POS[holdPieceType][1],
+                                   {'type':holdPieceType, 'orientation':0});
+            ghostPiece.isGhost = true;
+            ghostPiece.dropGhost();
+            
+            ghostPiece.draw(true);
             currentPiece.draw(true);
         } else {
             holdPiece = new Piece(PIECE_PREVIEW_POS[currentPiece.type][0], PIECE_PREVIEW_POS[currentPiece.type][1],
@@ -625,9 +724,9 @@ function gameTick() {
 
 function togglePause(displayOverlay) {
     if (gameActive) {
-        pause(displayOverlay)
+        pause(displayOverlay);
     } else {
-        unpause(displayOverlay)
+        unpause(displayOverlay);
     }   
 }
 
