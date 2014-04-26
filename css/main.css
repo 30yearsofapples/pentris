@@ -5,15 +5,21 @@ html {
     font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
 
+h3 {
+    margin: 20px 0 3px;
+    font-weight: bold;
+    font-size: 1em;
+    color: #555;
+}
+
 #container {
-    margin: 0px auto;
+    margin: 0 auto;
     width: 578px;
     position: relative;
 }
 
 #gameArea {
     margin-top: 100px;
-    overflow: hidden;
 }
 
 #gameOverlay, #encouragement {
@@ -38,35 +44,24 @@ html {
     width: 20px;
 }
 
-.pre-row td {
-    border: 1px dashed #ccc !important;
+#gameTable .pre-row td {
+    border: 1px dashed #ccc;
 }
 
-#pre-row-1 td {
-    border-bottom: 1px solid #aaa !important;
+#gameTable #pre-row-1 td {
+    border-bottom: 1px solid #aaa;
 }
 
-#gameDiv {
+#gameDiv, #holdPieceDiv, #nextPieces {
     float: left;
-}
-
-h3 {
-    margin: 20px 0 3px;
-    font-weight: bold;
-    font-size: 1em;
-    color: #555;
-}
-
-#holdPieceDiv, #nextPieces {
-    float: left;
-}
-
-#nextPieces {
-    margin: 11px 0 0 23px;
 }
 
 #holdPieceDiv {
     margin: 11px 23px 0 0;
+}
+
+#nextPieces {
+    margin: 11px 0 0 23px;
 }
 
 #nextPieces table {
@@ -79,16 +74,16 @@ h3 {
     width: 20px;
 }
 
-.floatClear {
-    clear: both;
-}
-
 #score {
     margin: 10px auto;
     width: 300px;
     font-weight: bold;
     font-size: 1.5em;
     color: #444;
+}
+
+.floatClear {
+    clear: both;
 }
 
 .hidden {

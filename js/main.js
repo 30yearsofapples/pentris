@@ -1,4 +1,544 @@
-//$(function() {
+$(function() {
+
+/*
+Piece indices. 0: no piece
+
+1:I    2:J    3:L    4:C    5:B
+xxxxx  xxxx      x   xxx    xxx    
+          x   xxxx   x x    xx
+
+6:D    7:S    8:Z    9:X    10:E
+xxx    x        x     x       x
+ xx    xxx    xxx    xxx    xxx
+         x    x       x      x
+
+11:F   12:T   13:N   14:O   15:A
+x      xxx    xxx    xxxx   xxxx
+xxx     x     x       x       x
+ x      x     x
+
+16:Q   17:P   18:K
+ xxx   xxx    xx
+xx       xx    xx
+                x
+
+*/
+
+var PIECE_I = [
+    [
+        [0],
+        [0],
+        [1, 1, 1, 1, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0],
+        [0],
+        [1, 1, 1, 1, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1]
+    ]
+];
+
+var PIECE_J = [
+    [
+        [0],
+        [0],
+        [1, 1, 1, 1],
+        [0, 0, 0, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 1, 1]
+    ],
+    [
+        [0],
+        [0, 1],
+        [0, 1, 1, 1, 1]
+    ],
+    [
+        [0],
+        [0, 0, 1, 1],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1]
+    ]
+];
+
+var PIECE_L = [
+    [
+        [0],
+        [0],
+        [0, 1, 1, 1, 1],
+        [0, 1, 0, 0, 0]
+    ],
+    [
+        [0],
+        [0, 1, 1],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0],
+        [0, 0, 0, 1],
+        [1, 1, 1, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1, 1]
+    ]
+];
+
+var PIECE_C = [
+    [
+        [0],
+        [1, 1, 1],
+        [1, 0, 1]
+    ],
+    [
+        [1, 1],
+        [0, 1],
+        [1, 1]
+    ],
+    [
+        [1, 0, 1],
+        [1, 1, 1]
+    ],
+    [
+        [0, 1, 1],
+        [0, 1],
+        [0, 1, 1]
+    ]
+];
+
+var PIECE_B = [
+    [
+        [0],
+        [1, 1, 1],
+        [1, 1]
+    ],
+    [
+        [1, 1],
+        [1, 1],
+        [0, 1]
+    ],
+    [
+        [0, 1, 1],
+        [1, 1, 1]
+    ],
+    [
+        [0, 1],
+        [0, 1, 1],
+        [0, 1, 1]
+    ]
+];
+
+var PIECE_D = [
+    [
+        [0],
+        [1, 1, 1],
+        [0, 1, 1]
+    ],
+    [
+        [0, 1],
+        [1, 1],
+        [1, 1]
+    ],
+    [
+        [1, 1],
+        [1, 1, 1]
+    ],
+    [
+        [0, 1, 1],
+        [0, 1, 1],
+        [0, 1]
+    ]
+];
+
+var PIECE_S = [
+    [
+        [1],
+        [1, 1, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0, 1, 1],
+        [0, 1],
+        [1, 1]
+    ],
+    [
+        [1],
+        [1, 1, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0, 1, 1],
+        [0, 1],
+        [1, 1]
+    ]
+];
+
+var PIECE_Z = [
+    [
+        [0, 0, 1],
+        [1, 1, 1],
+        [1]
+    ],
+    [
+        [1, 1],
+        [0, 1],
+        [0, 1, 1]
+    ],
+    [
+        [0, 0, 1],
+        [1, 1, 1],
+        [1]
+    ],
+    [
+        [1, 1],
+        [0, 1],
+        [0, 1, 1]
+    ]
+];
+
+var PIECE_X = [
+    [
+        [0, 1],
+        [1, 1, 1],
+        [0, 1]
+    ],
+    [
+        [0, 1],
+        [1, 1, 1],
+        [0, 1]
+    ],
+    [
+        [0, 1],
+        [1, 1, 1],
+        [0, 1]
+    ],
+    [
+        [0, 1],
+        [1, 1, 1],
+        [0, 1]
+    ]
+];
+
+var PIECE_E = [
+    [
+        [0, 0, 1],
+        [1, 1, 1],
+        [0, 1]
+    ],
+    [
+        [0, 1],
+        [1, 1],
+        [0, 1, 1]
+    ],
+    [
+        [0, 1],
+        [1, 1, 1],
+        [1]
+    ],
+    [
+        [1, 1],
+        [0, 1, 1],
+        [0, 1]
+    ]
+];
+
+var PIECE_F = [
+    [
+        [1],
+        [1, 1, 1],
+        [0, 1]
+    ],
+    [
+        [0, 1, 1],
+        [1, 1],
+        [0, 1]
+    ],
+    [
+        [0, 1],
+        [1, 1, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0, 1],
+        [0, 1, 1],
+        [1, 1]
+    ]
+];
+
+var PIECE_T = [
+    [
+        [1, 1, 1],
+        [0, 1],
+        [0, 1]
+    ],
+    [
+        [0, 0, 1],
+        [1, 1, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0, 1],
+        [0, 1],
+        [1, 1, 1]
+    ],
+    [
+        [1],
+        [1, 1, 1],
+        [1]
+    ]
+];
+
+var PIECE_N = [
+    [
+        [1, 1, 1],
+        [1],
+        [1]
+    ],
+    [
+        [1, 1, 1],
+        [0, 0, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 0, 1],
+        [1, 1, 1]
+    ],
+    [
+        [1],
+        [1],
+        [1, 1, 1]
+    ]
+];
+
+var PIECE_O = [
+    [
+        [0],
+        [0],
+        [0, 1, 1, 1, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0],
+        [0, 0, 1],
+        [0, 1, 1],
+        [0, 0, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0],
+        [0, 0, 1],
+        [1, 1, 1, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1, 1],
+        [0, 0, 1]
+    ]
+];
+
+var PIECE_A = [
+    [
+        [0],
+        [0],
+        [1, 1, 1, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 1, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0],
+        [0, 0, 1],
+        [0, 1, 1, 1, 1]
+    ],
+    [
+        [0],
+        [0, 0, 1],
+        [0, 0, 1, 1],
+        [0, 0, 1],
+        [0, 0, 1]
+    ]
+];
+
+var PIECE_Q = [
+    [
+        [0],
+        [0],
+        [0, 0, 1, 1, 1],
+        [0, 1, 1]
+    ],
+    [
+        [0],
+        [0, 1],
+        [0, 1, 1],
+        [0, 0, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0],
+        [0, 0, 1, 1],
+        [1, 1, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1, 1],
+        [0, 0, 0, 1]
+    ]
+];
+
+var PIECE_P = [
+    [
+        [0],
+        [0],
+        [1, 1, 1],
+        [0, 0, 1, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 1, 1],
+        [0, 1]
+    ],
+    [
+        [0],
+        [0, 1, 1],
+        [0, 0, 1, 1, 1]
+    ],
+    [
+        [0],
+        [0, 0, 0, 1],
+        [0, 0, 1, 1],
+        [0, 0, 1],
+        [0, 0, 1]
+    ]
+];
+
+var PIECE_K = [
+    [
+        [1, 1],
+        [0, 1, 1],
+        [0, 0, 1]
+    ],
+    [
+        [0, 0, 1],
+        [0, 1, 1],
+        [1, 1]
+    ],
+    [
+        [1],
+        [1, 1],
+        [0, 1, 1]
+    ],
+    [
+        [0, 1, 1],
+        [1, 1],
+        [1]
+    ]
+];
+
+// The position for the piece when in comes into play
+var PIECE_START_POS = [
+    null,
+    [4, 0],    //  1:I
+    [4, 0],    //  2:J
+    [4, 0],    //  3:L
+    [5, 1],    //  4:C
+    [5, 1],    //  5:B
+    [5, 1],    //  6:D
+    [5, 2],    //  7:S
+    [5, 2],    //  8:Z
+    [5, 2],    //  9:X
+    [5, 2],    // 10:E
+    [5, 2],    // 11:F
+    [5, 2],    // 12:T
+    [5, 2],    // 13:N
+    [4, 0],    // 14:O
+    [4, 0],    // 15:A
+    [4, 0],    // 16:Q
+    [4, 0],    // 17:P
+    [5, 2]     // 18:K
+];
+
+// The position of the piece of a preview or hold grid
+var PIECE_PREVIEW_POS = [
+    null,
+    [0, -1],   //  1:I
+    [0, -1],   //  2:J
+    [0, -1],   //  3:L
+    [1, 0],    //  4:C
+    [1, 0],    //  5:B
+    [1, 0],    //  6:D
+    [1, 0],    //  7:S
+    [1, 0],    //  8:Z
+    [1, 0],    //  9:X
+    [1, 0],    // 10:E
+    [1, 0],    // 11:F
+    [1, 0],    // 12:T
+    [1, 0],    // 13:N
+    [0, -1],   // 14:O
+    [0, -1],   // 15:A
+    [0, -1],   // 16:Q
+    [0, -1],   // 17:P
+    [1, 0]     // 18:K
+];
+
+var PIECE_COLOR = [
+    'transparent',
+    '#CC568E', //  1:I
+    '#77DA48', //  2:J
+    '#83CBC7', //  3:L
+    '#C38536', //  4:C
+    '#8277D8', //  5:B
+    '#483523', //  6:D
+    '#DA4A39', //  7:S
+    '#CDAB90', //  8:Z
+    '#D3CF50', //  9:X
+    '#CB51CE', // 10:E
+    '#83D693', // 11:F
+    '#ABA7CE', // 12:T
+    '#4C6770', // 13:N
+    '#679337', // 14:O
+    '#582C4B', // 15:A
+    '#9A433E', // 16:Q
+    '#536A3D', // 17:P
+    '#5B4C88'  // 18:K
+];
+
+// Mapping of piece index -> piece
+var PIECE_TYPE = [
+    null,
+    PIECE_I, PIECE_J, PIECE_L, PIECE_C, PIECE_B,
+    PIECE_D, PIECE_S, PIECE_Z, PIECE_X, PIECE_E,
+    PIECE_F, PIECE_T, PIECE_N, PIECE_O, PIECE_A,
+    PIECE_Q, PIECE_P, PIECE_K
+];
 
 var BOARD_HEIGHT = 21;
 var BOARD_WIDTH = 13;
@@ -7,20 +547,17 @@ var SIDE_SPEED = 100;
 var CLEAR_LINE_DELAY = 200;
 var DROP_DELAY = 200;
 
-var tickSpeed = 500;
-var gameActive = false;
-
 var ACTION = {
     DOWN: 0,
     LEFT: 1,
     RIGHT: 2,
     ROTATE: 3,
-    DROP: 4
+    DROP: 4 // When a piece falls down after a line clear
 };
 
 var ENCOURAGEMENT_TEXT = [
     '',
-    '',
+    '', // No encouragement for one line cleared
     'COOL',
     'GOOD JOB!',
     'WOW',
@@ -29,19 +566,24 @@ var ENCOURAGEMENT_TEXT = [
     'UNBERIEVABRE!',
 ];
 
+var tickSpeed = 500; // How often the piece drops
+
 var score = 0;
 
-var linesClearedTransaction = 0;
+var linesClearedTransaction = 0; // Lines cleared from one piece placement
 
-var activePieces = [];
-var holdPiece;
 var holdOkay = true;
 
-var gameStarted = false;
+var holdPiece; // Piece that the player is holding
+var currentPiece; // Piece that the player is controlling
+var ghostPiece; // Preview of where the piece will drop
 
 var nextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
 var nextNextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
 
+var activePieces = []; // Pieces that have been placed down
+
+// 2D grid representing whether each cell is taken by a piece or not
 var cellTaken = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -66,12 +608,13 @@ var cellTaken = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 
-var currentPiece;
-var ghostPiece;
+var gameActive = false; // Whether the game is active (as opposed to paused)
+var gameStarted = false; // Whether the game has started
 
 /*
 ** BEGIN Piece
 **/
+
 // Piece constructor.
 // args is either {'type' : t, 'structure' : [...]} or {'type' : t, 'orientation' : o}
 function Piece(x, y, args) {
@@ -88,7 +631,7 @@ function Piece(x, y, args) {
     }
 }
 
-// Draw the piece in the DOM
+// Draw the piece in the game board
 Piece.prototype.draw = function(reallyDraw) {
     for (var j = 0; j < this.structure.length; j++) {
         for (var i = 0; i < this.structure[j].length; i++) {
@@ -111,7 +654,7 @@ Piece.prototype.draw = function(reallyDraw) {
     }
 };
 
-// Draw the piece in the next pieces
+// Draw the piece in the next pieces grids
 Piece.prototype.drawNextPiece = function(num, reallyDraw) {
     for (var j = 0; j < this.structure.length; j++) {
         for (var i = 0; i < this.structure[j].length; i++) {
@@ -411,6 +954,68 @@ Piece.prototype.isEmpty = function() {
 ** END Piece
 **/
 
+function cellMarked(x, y) {
+    return cellTaken[y][x];
+}
+
+function markCell(x, y, reallyMark) {
+    cellTaken[y][x] = reallyMark;
+}
+
+function colorCell(x, y, color) {
+    $($('#gameTable>tbody').children()[y].children[x]).css('background', color);
+}
+
+function cellOpacity(x, y, opacity) {
+    $($('#gameTable>tbody').children()[y].children[x]).css('opacity', opacity);
+}
+
+function colorCellNextPiece(num, x, y, color) {
+    $($('#nextPiece' + num).children()[y].children[x]).css('background', color);
+}
+
+function colorCellHoldPiece(x, y, color) {
+    $($('#holdPiece').children()[y].children[x]).css('background', color);
+}
+
+function startNewGame() {
+    clearBoard(true);
+    
+    gameStarted = true;
+    
+    holdOkay = true;
+    if (holdPiece) {
+        holdPiece.drawHoldPiece(false);
+        holdPiece = undefined;
+    }
+    
+    $('#gameOverlay').html('');
+    $('#gameOverlay').css('background', 'transparent');
+    
+    linesClearedTransaction = 0;
+    score = 0;
+    updateScore(0);
+
+    nextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    nextNextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    
+    issueNewPiece(0);
+
+    if (!gameActive) {
+        gameActive = setInterval(gameTick, tickSpeed);
+    }
+}
+
+// End the game
+function endGame() {
+    clearInterval(gameActive);
+    gameActive = false;
+    gameStarted = false;
+    
+    $('#gameOverlay').html('<span id="gameOverSpan">GAME OVER</span>');
+    $('#gameOverlay').css('background', 'rgba(238, 238, 238, 0.4)');
+}
+
 // Check the game grid for full lines and clear them
 function checkAndClear(delay) {
     var fullLines = getFullLines();
@@ -430,16 +1035,6 @@ function checkAndClear(delay) {
     } else {
         checkAndClearHelper(fullLines);
     }
-}
-
-// Splash encourage text
-function showEncouragement(lines) {
-    var encouragementTextIdx = lines;
-    if (lines > ENCOURAGEMENT_TEXT.length) {
-        encouragementTextIdx = ENCOURAGEMENT_TEXT.length - 1;
-    }
-    $('#encouragement').html(ENCOURAGEMENT_TEXT[encouragementTextIdx]);
-    $('#encouragement').fadeIn(100).delay(200).fadeOut(150);
 }
 
 // Clear lines and draw the pieces
@@ -464,6 +1059,41 @@ function checkAndClearHelper(fullLines) {
     }
 }
 
+// Get the lines that are completely filled
+function getFullLines() {
+    var fullLines = [];
+
+    for (var j = BOARD_HEIGHT - 1; j >= 0; j--) {
+        var isFull = true;
+        for (var i = 0; i < BOARD_WIDTH; i++) {
+            if (!cellMarked(i, j)) {
+                isFull = false;
+                break;
+            }
+        }
+
+        if (isFull) {
+            fullLines.push(j);
+        }
+    }
+
+    return fullLines;
+}
+
+// Removes the pieces from activePieces that have an empty structure
+function removeEmptyPieces() {
+    var removedPiece = false;
+    for (var i = activePieces.length - 1; i >= 0; i--) {
+        if (activePieces[i].isEmpty()) {
+            activePieces.splice(i, 1);
+
+            removedPiece = true;
+        }
+    }
+
+    return removedPiece;
+}
+
 // Drop all pieces until they all hit the bottom
 function dropPieces() {
     var somethingHappened = false;
@@ -483,47 +1113,18 @@ function dropPieces() {
     }
 }
 
-// Updates score
 function updateScore(score) {
     $('#score').html('SCORE: ' + score);
 }
 
-// Removes the pieces from activePieces that have an empty structure
-function removeEmptyPieces() {
-    var removedPiece = false;
-    for (var i = activePieces.length - 1; i >= 0; i--) {
-        if (activePieces[i].isEmpty()) {
-            activePieces.splice(i, 1);
-
-            removedPiece = true;
-        }
+// Splash encourage text
+function showEncouragement(lines) {
+    var encouragementTextIdx = lines;
+    if (lines > ENCOURAGEMENT_TEXT.length) {
+        encouragementTextIdx = ENCOURAGEMENT_TEXT.length - 1;
     }
-
-    return removedPiece;
-}
-
-function cellMarked(x, y) {
-    return cellTaken[y][x];
-}
-
-function markCell(x, y, reallyMark) {
-    cellTaken[y][x] = reallyMark;
-}
-
-function colorCell(x, y, color) {
-    $($('#gameTable>tbody').children()[y].children[x]).css('background', color);
-}
-
-function cellOpacity(x, y, opacity) {
-    $($('#gameTable>tbody').children()[y].children[x]).css('opacity', opacity);
-}
-
-function colorCellNextPiece(num, x, y, color) {
-    $($('#nextPiece' + num).children()[y].children[x]).css('background', color);
-}
-
-function colorCellHoldPiece(x, y, color) {
-    $($('#holdPiece').children()[y].children[x]).css('background', color);
+    $('#encouragement').html(ENCOURAGEMENT_TEXT[encouragementTextIdx]);
+    $('#encouragement').finish().fadeOut(50).fadeIn(100).delay(200).fadeOut(150)
 }
 
 // Issues a new piece.
@@ -573,14 +1174,28 @@ function issueNewPiece(pieceType) {
     }
 }
 
-// End the game
-function endGame() {
-    clearInterval(gameActive);
-    gameActive = false;
-    gameStarted = false;
+// Returns the next piece and updates the nextPieces list
+function getNextPiece() {
+    var nextPiece = nextPieces.shift();
     
-    $('#gameOverlay').html('<span id="gameOverSpan">GAME OVER</span>');
-    $('#gameOverlay').css('background', 'rgba(238, 238, 238, 0.4)');
+    if (nextPieces.length === 0) {
+        nextPieces = nextNextPieces;
+        nextNextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+    }
+    
+    return nextPiece;
+}
+
+function permutePieces(pieces) {
+    for (var i = pieces.length - 1; i >= 0; i--) {
+        var rand = Math.floor(Math.random() * pieces.length);
+
+        var temp = pieces[i];
+        pieces[i] = pieces[rand];
+        pieces[rand] = temp;
+    }
+
+    return pieces;
 }
 
 // Swaps current piece with hold piece
@@ -621,80 +1236,6 @@ function hold() {
     }
 }
 
-function clearPreview() {
-    $('.nextPiece td').css('background', 'transparent');
-}
-
-// Returns the next piece and updates the nextPieces list
-function getNextPiece() {
-    var nextPiece = nextPieces.shift();
-    
-    if (nextPieces.length === 0) {
-        nextPieces = nextNextPieces;
-        nextNextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
-    }
-    
-    return nextPiece;
-}
-
-// Returns the next five pieces. Does not change the nextPieces list
-function getPreviewPieces() {
-    if (nextPieces.length >= 5) {
-        return nextPieces.slice(0, 5);
-    } else {
-        return nextPieces.slice(0).concat(nextNextPieces.slice(0, 5 - nextPieces.length));
-    }
-}
-
-// Get the lines that are completely filled
-function getFullLines() {
-    var fullLines = [];
-
-    for (var j = BOARD_HEIGHT - 1; j >= 0; j--) {
-        var isFull = true;
-        for (var i = 0; i < BOARD_WIDTH; i++) {
-            if (!cellMarked(i, j)) {
-                isFull = false;
-                break;
-            }
-        }
-
-        if (isFull) {
-            fullLines.push(j);
-        }
-    }
-
-    return fullLines;
-}
-
-function startNewGame() {
-    clearBoard(true);
-    
-    gameStarted = true;
-    
-    holdOkay = true;
-    if (holdPiece) {
-        holdPiece.drawHoldPiece(false);
-        holdPiece = undefined;
-    }
-    
-    $('#gameOverlay').html('');
-    $('#gameOverlay').css('background', 'transparent');
-    
-    linesClearedTransaction = 0;
-    score = 0;
-    updateScore(0);
-
-    nextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
-    nextNextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
-    
-    issueNewPiece(0);
-
-    if (!gameActive) {
-        gameActive = setInterval(gameTick, tickSpeed);
-    }
-}
-
 function clearBoard() {
     for (var j = 0; j < BOARD_HEIGHT; j++) {
         for (var i = 0; i < BOARD_WIDTH; i++) {
@@ -706,16 +1247,17 @@ function clearBoard() {
     activePieces = [];
 }
 
-function permutePieces(pieces) {
-    for (var i = pieces.length - 1; i >= 0; i--) {
-        var rand = Math.floor(Math.random() * pieces.length);
+function clearPreview() {
+    $('.nextPiece td').css('background', 'transparent');
+}
 
-        var temp = pieces[i];
-        pieces[i] = pieces[rand];
-        pieces[rand] = temp;
+// Returns the next five pieces. Does not change the nextPieces list
+function getPreviewPieces() {
+    if (nextPieces.length >= 5) {
+        return nextPieces.slice(0, 5);
+    } else {
+        return nextPieces.slice(0).concat(nextNextPieces.slice(0, 5 - nextPieces.length));
     }
-
-    return pieces;
 }
 
 function gameTick() {
@@ -822,4 +1364,4 @@ $('html').keyup(function(event) {
     }
 });
 
-//});
+});
