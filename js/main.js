@@ -559,11 +559,11 @@ var ENCOURAGEMENT_TEXT = [
     '',
     '', // No encouragement for one line cleared
     'COOL',
-    'GOOD JOB!',
+    'GREAT!',
     'WOW',
     'SUCH LINES',
     'VERY SKILL',
-    'UNBERIEVABRE!',
+    'UNBERIEVABRE!'
 ];
 
 var tickSpeed = 500; // How often the piece drops
@@ -1248,7 +1248,7 @@ function clearBoard() {
 }
 
 function clearPreview() {
-    $('.nextPiece td').css('background', 'transparent');
+    $('.nextPiece td').css('background', PIECE_COLOR[0]);
 }
 
 // Returns the next five pieces. Does not change the nextPieces list
@@ -1344,6 +1344,11 @@ $('html').keydown(function(event) {
             break;
         case 13: // ENTER
             startNewGame();
+            break;
+        case 27: // ESC
+            if (gameStarted) {
+                endGame();
+            }
             break;
     }
 });
