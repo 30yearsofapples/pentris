@@ -1304,6 +1304,7 @@ $('html').keydown(function(event) {
             if (gameActive) {
                 currentPiece.rotate();
             }
+            return false;
             break;
         case 37: // LEFT
             if (gameActive) {
@@ -1328,11 +1329,13 @@ $('html').keydown(function(event) {
                     downInterval = setInterval(function() { currentPiece.down(); }, DOWN_SPEED);
                 }
             }
+            return false;
             break;
         case 32: // SPACE
             if (gameActive) {
                 while (currentPiece.down() != 2) {}
             }
+            return false;
             break;
         case 67: // C
             if (gameActive) {
