@@ -748,9 +748,13 @@ Piece.prototype.move = function(action) {
         if (action == ACTION.DOWN) { // Hit something moving down
             this.mark(true);
             this.store();
-
+            
+            // Fix bug with going down while lines are being cleared
+            clearInterval(downInterval);
+            downInterval = 0;
+            
             checkAndClear(true);
-
+            
             return 2;
         } else if (action == ACTION.DROP) { // Hit something going down as a result of a cleared line
             this.mark(true);
@@ -1013,7 +1017,8 @@ function endGame() {
     gameStarted = false;
     
     $('#gameOverlay').html('<span id="gameOverSpan">GAME OVER</span>');
-    $('#gameOverlay').css('background', 'rgba(238, 238, 238, 0.4)');
+    
+    //$('#gameOverlay').css('background', 'rgba(255, 255, 255, 0.4)');
 }
 
 // Check the game grid for full lines and clear them
@@ -1251,6 +1256,10 @@ function clearPreview() {
     $('.nextPiece td').css('background', PIECE_COLOR[0]);
 }
 
+function clearHold() {
+    $('#holdPiece td').css('background', PIECE_COLOR[0]);
+}
+
 // Returns the next five pieces. Does not change the nextPieces list
 function getPreviewPieces() {
     if (nextPieces.length >= 5) {
@@ -1278,7 +1287,7 @@ function pause(displayOverlay) {
         gameActive = false;
         if (displayOverlay) {
             $('#gameOverlay').html('PAUSED');
-            $('#gameOverlay').css('background', '#eee');
+            $('#holdPieceDiv, #gameDiv, #nextPieces').css('visibility', 'hidden');
         }
     }
 }
@@ -1289,7 +1298,7 @@ function unpause(displayOverlay) {
             gameActive = setInterval(gameTick, tickSpeed);
             if (displayOverlay) {
                 $('#gameOverlay').html('');
-                $('#gameOverlay').css('background', 'transparent');
+                $('#holdPieceDiv, #gameDiv, #nextPieces').css('visibility', 'visible');
             }
         }
     }

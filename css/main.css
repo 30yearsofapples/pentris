@@ -1,7 +1,7 @@
 html {
     font-size: 1em;
     line-height: 1.4;
-    background: #eee;
+    background: #eee url('../img/brick.png');
     font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
 
@@ -18,12 +18,12 @@ p {
 
 #title {
     margin: 30px auto;
-    width: 300px;
+    width: 313px;
 }
 
 #container {
     margin: 0 auto;
-    width: 578px;
+    width: 605px;
     position: relative;
 }
 
@@ -32,9 +32,9 @@ p {
 }
 
 #gameOverlay, #encouragement {
-    width: 578px;
-    height: 484px;
-    line-height: 506px;
+    width: 605px;
+    height: 505px;
+    line-height: 529px;
     position: absolute;
     top: 0;
     text-align: center;
@@ -44,18 +44,18 @@ p {
 }
 
 #gameTable td {
-    border: 1px solid #aaa;
-    height: 20px;
-    width: 20px;
-    background: #eee;
+    border: 1px solid #888;
+    height: 21px;
+    width: 21px;
+    background: transparent;
 }
 
 #gameTable .pre-row td {
-    border: 1px dashed #ccc;
+    border: 1px dashed #aaa;
 }
 
 #gameTable #pre-row-1 td {
-    border-bottom: 1px solid #aaa;
+    border-bottom: 1px solid #888;
 }
 
 #gameDiv, #holdPieceDiv, #nextPieces {
@@ -67,15 +67,15 @@ p {
 }
 
 #holdPieceDiv {
-    margin: 1px 23px 0 0;
+    margin: 3px 25px 0 0;
 }
 
 #nextPieces {
-    margin: 1px 0 0 23px;
+    margin: 3px 0 0 25px;
 }
 
 #nextPieces table {
-    margin-bottom: 22px;
+    margin-bottom: 23px;
 }
 
 #nextPieces #nextPieceLastTable {
@@ -83,23 +83,22 @@ p {
 }
 
 #nextPieces td, #holdPieceDiv td {
-    border: 1px solid #ddd;
-    height: 20px;
-    width: 20px;
-    background: #eee;
+    border: 1px solid #aaa;
+    height: 21px;
+    width: 21px;
 }
 
 #score {
     margin: 20px auto;
-    width: 300px;
+    width: 313px;
     font-weight: bold;
     font-size: 1.5em;
     color: #444;
 }
 
 #instructions {
-    margin: 30px auto;
-    width: 300px;
+    margin: 20px auto;
+    width: 313px;
     color: #333;
 }
 
@@ -108,9 +107,9 @@ p {
     top: -1px;
     padding: 2px 5px;
     height: 0.4em;
-    border: 1px solid #777;
+    border: 1px solid #bbb;
     border-color: #bbb #bbb #666 #666;
-    background: #eee;
+    background: #fff;
     font-family: Consolas, "Courier New", monospace;
     font-size: 0.75em;
     -webkit-border-radius: 4px;
