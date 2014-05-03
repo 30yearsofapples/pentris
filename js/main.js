@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
 
 /*
 Piece indices. 0: no piece
@@ -563,7 +563,8 @@ var ENCOURAGEMENT_TEXT = [
     'WOW',
     'SUCH LINES',
     'VERY SKILL',
-    'UNBERIEVABRE!'
+    'UNBELIEVABLE!',
+    'PENTRIS MASTER'
 ];
 
 var tickSpeed = 500; // How often the piece drops
@@ -632,7 +633,7 @@ function Piece(x, y, args) {
 }
 
 // Draw the piece in the game board
-Piece.prototype.draw = function(reallyDraw) {
+Piece.prototype.draw = function (reallyDraw) {
     for (var j = 0; j < this.structure.length; j++) {
         for (var i = 0; i < this.structure[j].length; i++) {
             if (this.structure[j][i]) {
@@ -655,7 +656,7 @@ Piece.prototype.draw = function(reallyDraw) {
 };
 
 // Draw the piece in the next pieces grids
-Piece.prototype.drawNextPiece = function(num, reallyDraw) {
+Piece.prototype.drawNextPiece = function (num, reallyDraw) {
     for (var j = 0; j < this.structure.length; j++) {
         for (var i = 0; i < this.structure[j].length; i++) {
             if (this.structure[j][i]) {
@@ -668,7 +669,7 @@ Piece.prototype.drawNextPiece = function(num, reallyDraw) {
 };
 
 // Draw the piece in the hold piece
-Piece.prototype.drawHoldPiece = function(reallyDraw) {
+Piece.prototype.drawHoldPiece = function (reallyDraw) {
     for (var j = 0; j < this.structure.length; j++) {
         for (var i = 0; i < this.structure[j].length; i++) {
             if (this.structure[j][i]) {
@@ -681,7 +682,7 @@ Piece.prototype.drawHoldPiece = function(reallyDraw) {
 };
 
 // Mark on cellTaken 2D array for collision detection
-Piece.prototype.mark = function(reallyMark) {
+Piece.prototype.markTaken = function (reallyMark) {
     for (var j = 0; j < this.structure.length; j++) {
         for (var i = 0; i < this.structure[j].length; i++) {
             if (this.structure[j][i]) {
@@ -692,12 +693,12 @@ Piece.prototype.mark = function(reallyMark) {
 };
 
 // Store piece in activePieces
-Piece.prototype.store = function() {
+Piece.prototype.store = function () {
     activePieces.push(this);
 };
 
 // Performs an action
-Piece.prototype.move = function(action) {
+Piece.prototype.move = function (action) {
     if (action != ACTION.DROP) {
         ghostPiece.draw(false);
     }
@@ -729,7 +730,7 @@ Piece.prototype.move = function(action) {
                 ghostPiece.dropGhost();
                 break;
             case ACTION.DROP:
-                this.mark(false);
+                this.markTaken(false);
                 this.y++;
                 break;
         }
@@ -746,7 +747,7 @@ Piece.prototype.move = function(action) {
         }
         this.draw(true);
         if (action == ACTION.DOWN) { // Hit something moving down
-            this.mark(true);
+            this.markTaken(true);
             this.store();
             
             // Fix bug with going down while lines are being cleared
@@ -757,33 +758,33 @@ Piece.prototype.move = function(action) {
             
             return 2;
         } else if (action == ACTION.DROP) { // Hit something going down as a result of a cleared line
-            this.mark(true);
+            this.markTaken(true);
             return 0;
         }
     }
 };
 
-Piece.prototype.down = function() {
+Piece.prototype.down = function () {
     return this.move(ACTION.DOWN);
 };
-Piece.prototype.left = function() {
+Piece.prototype.left = function () {
     return this.move(ACTION.LEFT);
 };
-Piece.prototype.right = function() {
+Piece.prototype.right = function () {
     return this.move(ACTION.RIGHT);
 };
-Piece.prototype.rotate = function() {
+Piece.prototype.rotate = function () {
     return this.move(ACTION.ROTATE);
 };
-Piece.prototype.drop = function() {
+Piece.prototype.drop = function () {
     return this.move(ACTION.DROP);
 };
 
-Piece.prototype.dropGhost = function() {
+Piece.prototype.dropGhost = function () {
     this.y = this.dropGhostHelper(this.x, this.y, this.structure);
 };
 
-Piece.prototype.dropGhostHelper = function(testX, testY, testStructure) {
+Piece.prototype.dropGhostHelper = function (testX, testY, testStructure) {
     var beforeCollisionY = testY;
 
     while (true) {
@@ -805,7 +806,7 @@ Piece.prototype.dropGhostHelper = function(testX, testY, testStructure) {
 };
 
 // Returns true if performing an action would result in a collision
-Piece.prototype.collides = function(action) {
+Piece.prototype.collides = function (action) {
     var willCollide = false;
 
     var testStructure = clone(this.structure);
@@ -827,20 +828,20 @@ Piece.prototype.collides = function(action) {
             break;
         case ACTION.DROP:
             testY++;
-            this.mark(false);
+            this.markTaken(false);
             break;
     }
 
     willCollide = this.collidesHelper(testX, testY, testStructure, action);
 
     if (action == ACTION.DROP) {
-        this.mark(true);
+        this.markTaken(true);
     }
 
     return willCollide;
 };
 
-Piece.prototype.collidesHelper = function(testX, testY, testStructure, action) {
+Piece.prototype.collidesHelper = function (testX, testY, testStructure, action) {
     for (var j = 0; j < testStructure.length; j++) {
         for (var i = 0; i < testStructure[j].length; i++) {
             if (testStructure[j][i]) {
@@ -891,7 +892,7 @@ function clone(arr) {
 }
 
 // Clear lines. Argument is in terms of the game grid. Returns true if cleared lines
-Piece.prototype.clearLines = function(linesToClear) {
+Piece.prototype.clearLines = function (linesToClear) {
     var lines = clone(linesToClear);
     var clearedLines = 0;
 
@@ -939,7 +940,7 @@ Piece.prototype.clearLines = function(linesToClear) {
 };
 
 // Returns whether structure is essentially empty
-Piece.prototype.isEmpty = function() {
+Piece.prototype.isEmpty = function () {
     if (!this.structure.length) { // Empty structure
         return true;
     } else { // Non-empty structure. Checking for all false cells
@@ -967,19 +968,19 @@ function markCell(x, y, reallyMark) {
 }
 
 function colorCell(x, y, color) {
-    $($('#gameTable>tbody').children()[y].children[x]).css('background', color);
+    $('#gameTbody').find('tr:eq('+y+') td:eq('+x+')').css('background', color);
 }
 
 function cellOpacity(x, y, opacity) {
-    $($('#gameTable>tbody').children()[y].children[x]).css('opacity', opacity);
+    $('#gameTbody').find('tr:eq('+y+') td:eq('+x+')').css('opacity', opacity);
 }
 
 function colorCellNextPiece(num, x, y, color) {
-    $($('#nextPiece' + num).children()[y].children[x]).css('background', color);
+    $('#nextPiece' + num).find('tr:eq('+y+') td:eq('+x+')').css('background', color);
 }
 
 function colorCellHoldPiece(x, y, color) {
-    $($('#holdPiece').children()[y].children[x]).css('background', color);
+    $('#holdPiece').find('tr:eq('+y+') td:eq('+x+')').css('background', color);
 }
 
 function startNewGame() {
@@ -1017,8 +1018,6 @@ function endGame() {
     gameStarted = false;
     
     $('#gameOverlay').html('<span id="gameOverSpan">GAME OVER</span>');
-    
-    //$('#gameOverlay').css('background', 'rgba(255, 255, 255, 0.4)');
 }
 
 // Check the game grid for full lines and clear them
@@ -1033,7 +1032,7 @@ function checkAndClear(delay) {
         
         pause(false);
         if (delay) {
-            setTimeout(function(){checkAndClearHelper(fullLines);}, CLEAR_LINE_DELAY);
+            setTimeout(function (){checkAndClearHelper(fullLines);}, CLEAR_LINE_DELAY);
         } else {
             checkAndClearHelper(fullLines);
         }
@@ -1046,18 +1045,18 @@ function checkAndClear(delay) {
 function checkAndClearHelper(fullLines) {
     for (var i = 0; i < activePieces.length; i++) {
         activePieces[i].draw(false);
-        activePieces[i].mark(false);
+        activePieces[i].markTaken(false);
         activePieces[i].clearLines(fullLines);
     }
 
     // There may be new active pieces, do this in a separate loop
     for (i = 0; i < activePieces.length; i++) {
         activePieces[i].draw(true);
-        activePieces[i].mark(true);
+        activePieces[i].markTaken(true);
     }
     
     if (fullLines.length > 0) {
-        setTimeout(function(){dropPieces();}, DROP_DELAY);
+        setTimeout(function (){dropPieces();}, DROP_DELAY);
     } else {
         issueNewPiece(0);
         unpause(false);
@@ -1112,7 +1111,7 @@ function dropPieces() {
     }
     
     if (somethingHappened) {
-        setTimeout(function(){dropPieces();}, DROP_DELAY);
+        setTimeout(function (){dropPieces();}, DROP_DELAY);
     } else {
         checkAndClear(false);
     }
@@ -1307,7 +1306,7 @@ function unpause(displayOverlay) {
 var leftInterval = 0;
 var rightInterval = 0;
 var downInterval = 0;
-$('html').keydown(function(event) {
+$('html').keydown(function (event) {
     switch (event.keyCode) {
         case 38: // UP
             if (gameActive) {
@@ -1319,7 +1318,7 @@ $('html').keydown(function(event) {
             if (gameActive) {
                 if (!leftInterval) {
                     currentPiece.left();
-                    leftInterval = setInterval(function() { currentPiece.left(); }, SIDE_SPEED);
+                    leftInterval = setInterval(function () { currentPiece.left(); }, SIDE_SPEED);
                 }
             }
             break;
@@ -1327,7 +1326,7 @@ $('html').keydown(function(event) {
             if (gameActive) {
                 if (!rightInterval) {
                     currentPiece.right();
-                    rightInterval = setInterval(function() { currentPiece.right(); }, SIDE_SPEED);
+                    rightInterval = setInterval(function () { currentPiece.right(); }, SIDE_SPEED);
                 }
             }
             break;
@@ -1335,7 +1334,7 @@ $('html').keydown(function(event) {
             if (gameActive) {
                 if (!downInterval) {
                     currentPiece.down();
-                    downInterval = setInterval(function() { currentPiece.down(); }, DOWN_SPEED);
+                    downInterval = setInterval(function () { currentPiece.down(); }, DOWN_SPEED);
                 }
             }
             return false;
@@ -1364,7 +1363,7 @@ $('html').keydown(function(event) {
             break;
     }
 });
-$('html').keyup(function(event) {
+$('html').keyup(function (event) {
     switch (event.keyCode) {
         case 37: // LEFT
             clearInterval(leftInterval);
