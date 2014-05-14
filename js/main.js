@@ -563,8 +563,7 @@ var ENCOURAGEMENT_TEXT = [
     'WOW',
     'SUCH LINES',
     'VERY SKILL',
-    'UNBELIEVABLE!',
-    'PENTRIS MASTER'
+    'UNBELIEVABLE!'
 ];
 
 var tickSpeed = 500; // How often the piece drops
@@ -710,24 +709,18 @@ Piece.prototype.move = function (action) {
                 break;
             case ACTION.LEFT:
                 this.x--;
-                ghostPiece.x = this.x;
-                ghostPiece.y = this.y;
-                ghostPiece.dropGhost();
+                this.updateGhostPosition();
                 break;
             case ACTION.RIGHT:
                 this.x++;
-                ghostPiece.x = this.x;
-                ghostPiece.y = this.y;
-                ghostPiece.dropGhost();
+                this.updateGhostPosition();
                 break;
             case ACTION.ROTATE:
                 this.orientation = (this.orientation + 1) % 4;
                 this.structure = clone(PIECE_TYPE[this.type][this.orientation]);
                 ghostPiece.orientation = this.orientation;
                 ghostPiece.structure = clone(this.structure);
-                ghostPiece.x = this.x;
-                ghostPiece.y = this.y;
-                ghostPiece.dropGhost();
+                this.updateGhostPosition();
                 break;
             case ACTION.DROP:
                 this.markTaken(false);
@@ -778,6 +771,12 @@ Piece.prototype.rotate = function () {
 };
 Piece.prototype.drop = function () {
     return this.move(ACTION.DROP);
+};
+
+Piece.prototype.updateGhostPosition = function () {
+    ghostPiece.x = this.x;
+    ghostPiece.y = this.y;
+    ghostPiece.dropGhost();
 };
 
 Piece.prototype.dropGhost = function () {
@@ -1308,12 +1307,14 @@ var rightInterval = 0;
 var downInterval = 0;
 $('html').keydown(function (event) {
     switch (event.keyCode) {
+        case 75: // K
         case 38: // UP
             if (gameActive) {
                 currentPiece.rotate();
             }
             return false;
             break;
+        case 72: // H
         case 37: // LEFT
             if (gameActive) {
                 if (!leftInterval) {
@@ -1322,6 +1323,7 @@ $('html').keydown(function (event) {
                 }
             }
             break;
+        case 76: // L
         case 39: // RIGHT
             if (gameActive) {
                 if (!rightInterval) {
@@ -1330,6 +1332,7 @@ $('html').keydown(function (event) {
                 }
             }
             break;
+        case 74: // J
         case 40: // DOWN
             if (gameActive) {
                 if (!downInterval) {
@@ -1345,34 +1348,34 @@ $('html').keydown(function (event) {
             }
             return false;
             break;
+        case 16: // SHIFT
         case 67: // C
             if (gameActive) {
                 hold();
             }
             break;
+        case 27: // ESC
         case 80: // P
             togglePause(true);
             break;
         case 13: // ENTER
             startNewGame();
             break;
-        case 27: // ESC
-            if (gameStarted) {
-                endGame();
-            }
-            break;
     }
 });
 $('html').keyup(function (event) {
     switch (event.keyCode) {
+        case 72: // H
         case 37: // LEFT
             clearInterval(leftInterval);
             leftInterval = 0;
             break;
+        case 76: // L
         case 39: // RIGHT
             clearInterval(rightInterval);
             rightInterval = 0;
             break;
+        case 74: // J
         case 40: // DOWN
             clearInterval(downInterval);
             downInterval = 0;
