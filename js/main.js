@@ -4,7 +4,7 @@ $(function () {
 Piece indices. 0: no piece
 
 1:I    2:J    3:L    4:C    5:B
-xxxxx  xxxx      x   xxx    xxx    
+xxxxx  xxxx      x   xxx    xxx
           x   xxxx   x x    xx
 
 6:D    7:S    8:Z    9:X    10:E
@@ -563,12 +563,19 @@ var ENCOURAGEMENT_TEXT = [
     'WOW',
     'SUCH LINES',
     'VERY SKILL',
-    'UNBELIEVABLE!'
+    'UNBELIEVABLE!',
+    'PENTRIS MASTER'
 ];
 
 var tickSpeed = 500; // How often the piece drops
 
 var score = 0;
+
+if (docCookies.hasItem('highScore')) {
+    $('#highScore').html(docCookies.getItem('highScore'));
+} else {
+    docCookies.setItem('highScore', 0, Infinity);
+}
 
 var linesClearedTransaction = 0; // Lines cleared from one piece placement
 
@@ -637,7 +644,7 @@ Piece.prototype.draw = function (reallyDraw) {
         for (var i = 0; i < this.structure[j].length; i++) {
             if (this.structure[j][i]) {
                 var color = reallyDraw ? PIECE_COLOR[this.type] : PIECE_COLOR[0];
-                
+
                 if (this.isGhost) {
                     if (reallyDraw) {
                         cellOpacity(this.x + i, this.y + j, 0.2);
@@ -742,13 +749,13 @@ Piece.prototype.move = function (action) {
         if (action == ACTION.DOWN) { // Hit something moving down
             this.markTaken(true);
             this.store();
-            
+
             // Fix bug with going down while lines are being cleared
             clearInterval(downInterval);
             downInterval = 0;
-            
+
             checkAndClear(true);
-            
+
             return 2;
         } else if (action == ACTION.DROP) { // Hit something going down as a result of a cleared line
             this.markTaken(true);
@@ -873,7 +880,7 @@ Piece.prototype.collidesHelper = function (testX, testY, testStructure, action) 
             }
         }
     }
-    
+
     return false;
 };
 
@@ -983,26 +990,28 @@ function colorCellHoldPiece(x, y, color) {
 }
 
 function startNewGame() {
+    unpause(true);
+
     clearBoard(true);
-    
+
     gameStarted = true;
-    
+
     holdOkay = true;
     if (holdPiece) {
         holdPiece.drawHoldPiece(false);
         holdPiece = undefined;
     }
-    
+
     $('#gameOverlay').html('');
     $('#gameOverlay').css('background', 'transparent');
-    
+
     linesClearedTransaction = 0;
     score = 0;
     updateScore(0);
 
     nextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
     nextNextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
-    
+
     issueNewPiece(0);
 
     if (!gameActive) {
@@ -1015,7 +1024,7 @@ function endGame() {
     clearInterval(gameActive);
     gameActive = false;
     gameStarted = false;
-    
+
     $('#gameOverlay').html('<span id="gameOverSpan">GAME OVER</span>');
 }
 
@@ -1023,12 +1032,12 @@ function endGame() {
 function checkAndClear(delay) {
     var fullLines = getFullLines();
     var numFullLines = fullLines.length;
-    
+
     if (numFullLines > 0) {
         linesClearedTransaction += numFullLines;
-        
+
         showEncouragement(linesClearedTransaction);
-        
+
         pause(false);
         if (delay) {
             setTimeout(function (){checkAndClearHelper(fullLines);}, CLEAR_LINE_DELAY);
@@ -1053,7 +1062,7 @@ function checkAndClearHelper(fullLines) {
         activePieces[i].draw(true);
         activePieces[i].markTaken(true);
     }
-    
+
     if (fullLines.length > 0) {
         setTimeout(function (){dropPieces();}, DROP_DELAY);
     } else {
@@ -1108,7 +1117,7 @@ function dropPieces() {
             somethingHappened = true;
         }
     }
-    
+
     if (somethingHappened) {
         setTimeout(function (){dropPieces();}, DROP_DELAY);
     } else {
@@ -1117,7 +1126,11 @@ function dropPieces() {
 }
 
 function updateScore(score) {
-    $('#score').html('SCORE: ' + score);
+    if (score > docCookies.getItem('highScore')) {
+        docCookies.setItem('highScore', score, Infinity);
+        $('#highScore').html(score);
+    }
+    $('#score').html(score);
 }
 
 // Splash encourage text
@@ -1137,7 +1150,7 @@ function issueNewPiece(pieceType) {
     score += linesClearedTransaction * linesClearedTransaction * 10;
     updateScore(score);
     linesClearedTransaction = 0;
-    
+
     var newPieceType;
     if (pieceType === 0) {
         newPieceType = getNextPiece();
@@ -1149,7 +1162,7 @@ function issueNewPiece(pieceType) {
     }
 
     var nextPieceTypes = getPreviewPieces();
-    
+
     clearPreview();
     var previewPiece;
     for (var p = 0; p < nextPieceTypes.length; p++) {
@@ -1163,15 +1176,15 @@ function issueNewPiece(pieceType) {
     ghostPiece.isGhost = true;
     ghostPiece.dropGhost();
     ghostPiece.draw(true);
-    
+
     currentPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1],
                              {'type':newPieceType, 'orientation':0});
     currentPiece.draw(true);
-    
+
     // Check for game over
     var testPiece = new Piece(PIECE_START_POS[newPieceType][0], PIECE_START_POS[newPieceType][1] - 1,
                               {'type':newPieceType, 'orientation':0});
-    
+
     if (testPiece.collides(ACTION.DOWN)) {
         endGame();
     }
@@ -1180,12 +1193,12 @@ function issueNewPiece(pieceType) {
 // Returns the next piece and updates the nextPieces list
 function getNextPiece() {
     var nextPiece = nextPieces.shift();
-    
+
     if (nextPieces.length === 0) {
         nextPieces = nextNextPieces;
         nextNextPieces = permutePieces([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
     }
-    
+
     return nextPiece;
 }
 
@@ -1205,36 +1218,36 @@ function permutePieces(pieces) {
 function hold() {
     if (holdOkay) {
         holdOkay = false;
-        
+
         ghostPiece.draw(false);
         currentPiece.draw(false);
-        
+
         if (holdPiece) {
             var holdPieceType = holdPiece.type;
-            
+
             holdPiece.drawHoldPiece(false);
-            
+
             holdPiece = new Piece(PIECE_PREVIEW_POS[currentPiece.type][0], PIECE_PREVIEW_POS[currentPiece.type][1],
                                   {'type':currentPiece.type, 'orientation':0});
-                                  
+
             currentPiece = new Piece(PIECE_START_POS[holdPieceType][0], PIECE_START_POS[holdPieceType][1],
                                      {'type':holdPieceType, 'orientation':0});
-            
+
             ghostPiece = new Piece(PIECE_START_POS[holdPieceType][0], PIECE_START_POS[holdPieceType][1],
                                    {'type':holdPieceType, 'orientation':0});
             ghostPiece.isGhost = true;
             ghostPiece.dropGhost();
-            
+
             ghostPiece.draw(true);
             currentPiece.draw(true);
         } else {
             holdPiece = new Piece(PIECE_PREVIEW_POS[currentPiece.type][0], PIECE_PREVIEW_POS[currentPiece.type][1],
                                   {'type':currentPiece.type, 'orientation':0});
-            
+
             issueNewPiece(-1);
         }
-        
-        
+
+
         holdPiece.drawHoldPiece(true);
     }
 }
@@ -1276,7 +1289,7 @@ function togglePause(displayOverlay) {
         pause(displayOverlay);
     } else {
         unpause(displayOverlay);
-    }   
+    }
 }
 
 function pause(displayOverlay) {
@@ -1305,58 +1318,102 @@ function unpause(displayOverlay) {
 var leftInterval = 0;
 var rightInterval = 0;
 var downInterval = 0;
+
+function rotateAction() {
+    if (gameActive) {
+        currentPiece.rotate();
+    }
+}
+
+function leftStart() {
+    if (gameActive) {
+        if (!leftInterval) {
+            currentPiece.left();
+            leftInterval = setInterval(function () { currentPiece.left(); }, SIDE_SPEED);
+        }
+    }
+}
+
+function leftEnd() {
+    clearInterval(leftInterval);
+    leftInterval = 0;
+}
+
+function rightStart() {
+    if (gameActive) {
+        if (!rightInterval) {
+            currentPiece.right();
+            rightInterval = setInterval(function () { currentPiece.right(); }, SIDE_SPEED);
+        }
+    }
+}
+
+function rightEnd() {
+    clearInterval(rightInterval);
+    rightInterval = 0;
+}
+
+function softDropStart() {
+    if (gameActive) {
+        if (!downInterval) {
+            currentPiece.down();
+            downInterval = setInterval(function () { currentPiece.down(); }, DOWN_SPEED);
+        }
+    }
+}
+
+function softDropEnd() {
+    clearInterval(downInterval);
+    downInterval = 0;
+}
+
+function hardDrop() {
+    if (gameActive) {
+        while (currentPiece.down() != 2) {}
+    }
+}
+
+function holdAction() {
+    if (gameActive) {
+        hold();
+    }
+}
+
+function pauseAction() {
+    togglePause(true);
+}
+
 $('html').keydown(function (event) {
     switch (event.keyCode) {
         case 75: // K
         case 38: // UP
-            if (gameActive) {
-                currentPiece.rotate();
-            }
+            rotateAction();
             return false;
             break;
         case 72: // H
         case 37: // LEFT
-            if (gameActive) {
-                if (!leftInterval) {
-                    currentPiece.left();
-                    leftInterval = setInterval(function () { currentPiece.left(); }, SIDE_SPEED);
-                }
-            }
+            leftStart();
             break;
         case 76: // L
         case 39: // RIGHT
-            if (gameActive) {
-                if (!rightInterval) {
-                    currentPiece.right();
-                    rightInterval = setInterval(function () { currentPiece.right(); }, SIDE_SPEED);
-                }
-            }
+            rightStart();
             break;
         case 74: // J
         case 40: // DOWN
-            if (gameActive) {
-                if (!downInterval) {
-                    currentPiece.down();
-                    downInterval = setInterval(function () { currentPiece.down(); }, DOWN_SPEED);
-                }
-            }
+            softDropStart();
             return false;
             break;
         case 32: // SPACE
-            if (gameActive) {
-                while (currentPiece.down() != 2) {}
-            }
+            hardDrop();
             return false;
             break;
         case 16: // SHIFT
         case 67: // C
-            if (gameActive) {
-                hold();
-            }
+            holdAction();
             break;
         case 27: // ESC
         case 80: // P
-            togglePause(true);
+            pauseAction();
             break;
         case 13: // ENTER
             startNewGame();
@@ -1367,20 +1424,51 @@ $('html').keyup(function (event) {
     switch (event.keyCode) {
         case 72: // H
         case 37: // LEFT
-            clearInterval(leftInterval);
-            leftInterval = 0;
+            leftEnd();
             break;
         case 76: // L
         case 39: // RIGHT
-            clearInterval(rightInterval);
-            rightInterval = 0;
+            rightEnd();
             break;
         case 74: // J
         case 40: // DOWN
-            clearInterval(downInterval);
-            downInterval = 0;
+            softDropEnd()
             break;
     }
+});
+
+$('#enterIcon').click(function() {
+    startNewGame();
+});
+$('#rotateIcon').click(function() {
+    rotateAction();
+});
+$('#hardDropIcon').click(function() {
+    hardDrop();
+});
+$('#holdIcon').click(function() {
+    holdAction();
+});
+$('#pauseIcon').click(function() {
+    pauseAction();
+});
+$('#leftIcon').mousedown(function() {
+    leftStart();
+});
+$('#leftIcon').mouseup(function() {
+    leftEnd();
+});
+$('#rightIcon').mousedown(function() {
+    rightStart();
+});
+$('#rightIcon').mouseup(function() {
+    rightEnd();
+});
+$('#softDropIcon').mousedown(function() {
+    softDropStart();
+});
+$('#softDropIcon').mouseup(function() {
+    softDropEnd();
 });
 
 });

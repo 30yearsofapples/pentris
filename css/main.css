@@ -5,6 +5,12 @@ html {
     font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
 
+h1 {
+    font-size: 2.25em;
+    margin: 30px auto;
+    width: 313px;
+}
+
 h3 {
     margin: 20px 0 3px;
     font-weight: bold;
@@ -12,13 +18,15 @@ h3 {
     color: #555;
 }
 
-p {
-    margin: 0.5em 0;
+h4 {
+    margin: 0;
+    font-weight: bold;
+    font-size: 0.75em;
+    margin-bottom: 0.25em;
 }
 
-#title {
-    margin: 30px auto;
-    width: 313px;
+p {
+    margin: 0.5em 0;
 }
 
 #container {
@@ -33,10 +41,10 @@ p {
 
 #gameOverlay, #encouragement {
     width: 605px;
+    top: 0;
     height: 505px;
     line-height: 529px;
     position: absolute;
-    top: 0;
     text-align: center;
     font-size: 4em;
     font-weight: bold;
@@ -88,12 +96,26 @@ p {
     width: 21px;
 }
 
-#score {
-    margin: 20px auto;
-    width: 313px;
-    font-weight: bold;
-    font-size: 1.5em;
-    color: #444;
+.scoreDivs {
+    float: right;
+    padding: 9px 10px 7px;
+    background: #e1e1e1;
+    color: #555;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    line-height: 1;
+    text-align: center;
+}
+
+#highScoreDiv {
+    margin-left: 15px;
+}
+
+.scores {
+    margin: 0;
+    font-family: Consolas, monaco, monospace;
+    font-size: 1.25em;
 }
 
 #instructions {
@@ -115,6 +137,13 @@ p {
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .floatClear {
